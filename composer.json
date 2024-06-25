@@ -1,0 +1,19 @@
+{
+    "name": "vulcanphp/hyper-core",
+    "description": "Core Classes of Hyper MVT Framework",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "hyper\\": "src/"
+        },
+        "files": [
+            "./src/helpers/shortcut.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Shahin Moyshan",
+            "email": "shahin.moyshan2@gmail.com"
+        }
+    ]
+}
