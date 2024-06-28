@@ -296,8 +296,6 @@ Core Classes and Functionalities for Hyper MVT Framework
             ];
         }
     }
-
-    var_dump(student::with(['subjects', 'results', 'department'])->paginate(20));
     ```
 
 ### Vite
