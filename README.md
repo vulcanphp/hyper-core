@@ -88,7 +88,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     use hyper\query;
     $query = new query(database: $database, table: 'students');
-    dump($query->get()->result());
+    dump($query->result());
     ```
 
 ### Session
@@ -132,19 +132,17 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     // independent usage
     $form = new form(request: $request, fields: [['type' => 'text', 'name' => 'name']]);
+    // usage from model
+    $form = new form(request: $request, model: $student);
+
+    // add new form field
     $form->add(['type' => 'email', 'name' => 'email', 'required' => true]);
+    
+    // validate form
     if($form->validate()){
         var_dump($form->getData());
     }else{
         echo $form->render();
-    }
-
-    // usage from model
-    $form = new form(request: $request, model: $student);
-    if($form->validate()){
-        $form->save();
-    }else{
-        $form->render();
     }
     ```
 
@@ -173,7 +171,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     use hyper\utils\paginator;
     $paginator = new paginator(total: 500, limit: 20);
     $paginator->setData([...]);
-    var_dump($paginator->getLinks(), $paginator->getLinks());
+    var_dump($paginator->getData(), $paginator->getLinks());
     ```
 
 ### Ping
@@ -245,7 +243,6 @@ Core Classes and Functionalities for Hyper MVT Framework
     $mail = new mail();
     $mail->from('shahin.moyshan2@gmail.com', 'Shahin Moyshan');
     $mail->replyTo('shahin.moyshan2@gmail.com');
-    $mail->subject('Test Mail From Shahin');
     $mail->subject('Test Mail');
     $mail->body('Hello World, This is Test Mail From Shahin Moyshan');
     $mail->send();
@@ -265,8 +262,8 @@ Core Classes and Functionalities for Hyper MVT Framework
         protected function orm(): array {
             return [
                 'department' => ['has' => 'one', 'model' => department::class],
-                'subjects' => ['has' => 'many-x', 'table' => 'students_subjects'],
-                'results' => ['has' => 'many', 'model' => result::class],
+                'subjects' => ['has' => 'many-x', 'model' => subject::class, 'table' => 'students_subjects'],
+                'results' => ['has' => 'many', 'model' => result::class, 'formIgnore' => true],
             ];
         }
     }
