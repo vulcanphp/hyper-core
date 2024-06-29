@@ -47,6 +47,8 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Description:** Middleware class for handling HTTP request routing.
 - **Example:**
     ```php
+    use hyper\middleware;
+
     $middleware = new middleware();
     $middleware->add(callback);
     $middleware->handle(request: $request);
@@ -57,6 +59,8 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Description:** Router class for defining and handling application routes.
 - **Example:**
     ```php
+    use hyper\router;
+
     $router = new router(middleware: $middleware);
     $router->add('/', fn() => 'Hello World');
     $response = $router->dispatch();
@@ -130,6 +134,8 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Description:** Form builder class for constructing and managing forms.
 - **Example:**
     ```php
+    use hyper\utils\form;
+
     // independent usage
     $form = new form(request: $request, fields: [['type' => 'text', 'name' => 'name']]);
     // usage from model
