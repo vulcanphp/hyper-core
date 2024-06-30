@@ -16,18 +16,26 @@ trait uploader
     {
         foreach ($this->uploads() as $upload) {
             $name = $upload['name'];
-            $oldFiles = explode(',', application::$app->request->post('_' . $name, ''));
-            if (isset($data[$name]) && (((array)$data[$name]['size'] ?? [])[0] ?? 0) > 0) {
-                $upload['uploadDir'] = env('upload_dir') . '/' . ($upload['uploadTo'] ?? '');
-                unset($upload['name'], $upload['uploadTo']);
-                $uploader = new utilsUploader(...$upload);
-                $data[$name] = $this->clearSavedPath($uploader->upload($data[$name]), env('upload_dir'));
-                $this->removeFiles($oldFiles);
-            } else {
-                $data[$name] = count($oldFiles) == 1 ? $oldFiles[0] : $oldFiles;
-            }
+            $upload['uploadDir'] = env('upload_dir') . '/' . ($upload['uploadTo'] ?? '');
+            unset($upload['name'], $upload['uploadTo']);
+
+            $data[$name] = $this->__doUpload($name, $upload, $data[$name]);
         }
         return $data;
+    }
+
+    protected function __doUpload(string $name, array $upload, ?array $files): null|string|array
+    {
+        $saved = null;
+        $oldFiles = explode(',', application::$app->request->post('_' . $name, ''));
+        if (isset($files) && (((array)$files['size'] ?? [])[0] ?? 0) > 0) {
+            $uploader = new utilsUploader(...$upload);
+            $saved = $this->clearSavedPath($uploader->upload($files), env('upload_dir'));
+            $this->removeFiles($oldFiles);
+        } else {
+            $saved = count($oldFiles) == 1 ? $oldFiles[0] : $oldFiles;
+        }
+        return $saved;
     }
 
     public function getRegisteredUploads(): array

@@ -83,6 +83,11 @@ class form
         return true;
     }
 
+    public function getFields(): array
+    {
+        return $this->fields;
+    }
+
     public function getData(): array
     {
         $data = [];
