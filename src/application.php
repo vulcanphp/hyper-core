@@ -23,8 +23,10 @@ class application
     ) {
         self::$app = $this;
 
+        $this->env = array_merge($this->env, require $this->path . '/env.php');
+
         // register debugger
-        $this->debugger = new debugger($env['debug']);
+        $this->debugger = new debugger($this->env['debug']);
         $this->debugger->log('app', 'creating application');
 
         // load application core classes
@@ -32,8 +34,8 @@ class application
         $this->request = new request();
         $this->response = new response();
         $this->router = new router(new middleware());
-        $this->database = new database($env['database']);
-        $this->translator = new translator($env['lang'], $env['lang_dir']);
+        $this->database = new database($this->env['database']);
+        $this->translator = new translator($this->env['lang'], $this->env['lang_dir']);
 
         $this->debugger->log('app', 'application created');
     }

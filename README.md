@@ -399,6 +399,11 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Function:** `template_exists()`
 - **Description:** Checks if a template exists.
 
+### Site Settings
+- **Functions:**
+  - `setting(string $layer, string $key, $default): mixed` - Returns the value for this setting.
+  - `settings()` - Returns the settings drawer.
+
 ## Conclusion
 
 HyperCore provides a comprehensive set of core functionalities, utility methods, and helper classes to make web development with the Hyper MVT Framework efficient and enjoyable. Whether you are handling HTTP requests, managing databases, or working with templates, HyperCore has you covered.
