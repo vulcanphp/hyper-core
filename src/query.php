@@ -404,7 +404,7 @@ class query
     public function count(): int
     {
         $statement = $this->database->prepare(
-            "SELECT COUNT() FROM {$this->table} as p "
+            "SELECT COUNT(1) FROM {$this->table} as p "
                 . (!empty($this->query['joins']) ? $this->query['joins'] : '')
                 . $this->getWhereSql()
                 . (isset($this->query['group']) ? ' GROUP BY ' . trim($this->query['group']) : '')
