@@ -1,7 +1,5 @@
 <?php
 
-use admin\admin;
-use admin\core\drawer;
 use hyper\application;
 use hyper\database;
 use hyper\helpers\vite;
@@ -118,7 +116,7 @@ function dd(...$args)
     die(0);
 }
 
-function env(string $key, $default = null): string|array
+function env(string $key, $default = null): mixed
 {
     return application::$app->env[$key] ??  $default;
 }
@@ -166,14 +164,4 @@ function vite($config): vite
 function template_exists(string $template): bool
 {
     return file_exists(app_dir('templates/' . str_replace('.php', '', $template) . '.php'));
-}
-
-function setting(string $layer, string $key, $default = null)
-{
-    return admin::$instance->settings->get($layer, $key, $default);
-}
-
-function settings(): drawer
-{
-    return admin::$instance->settings;
 }

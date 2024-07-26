@@ -18,7 +18,12 @@ class hash
             $cost = sprintf('%02d', $cost);
         }
 
-        $salt = bin2hex(random_bytes(8));
+        $salt = '';
+        for ($i = 0; $i < 8; ++$i) {
+            $salt .= pack('S1', mt_rand(0, 0xffff));
+        }
+
+        $salt = strtr(rtrim(base64_encode($salt), '='), '+', '.');
 
         return crypt($plain . env('secret'), sprintf('$%s$%s$%s$', $algo, $cost, $salt));
     }
@@ -42,25 +47,5 @@ class hash
     {
         [$encryptedData, $iv, $key] = explode('::', base64_decode($ciphertext));
         return openssl_decrypt($encryptedData, 'AES-256-CBC', $key, 0, $iv);
-    }
-
-    public static function encryptArray(array $arr): string
-    {
-        return base64_encode(json_encode($arr, JSON_THROW_ON_ERROR));
-    }
-
-    public static function decryptArray(string $string): array
-    {
-        return json_decode(base64_decode($string), true, 512, JSON_THROW_ON_ERROR);
-    }
-
-    public function password(string $plain): string
-    {
-        return str_replace('$2a$07$', '', self::make($plain, 'Blowfish'));
-    }
-
-    public function passwordVerify(string $plain, string $hash): bool
-    {
-        return self::validate($plain, '$2a$07$' . $hash);
     }
 }
