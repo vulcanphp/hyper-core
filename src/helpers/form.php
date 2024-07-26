@@ -22,7 +22,10 @@ trait form
         foreach ($this->extractModelProperties() as $name => $field) {
             $type = 'text';
             $multiple = false;
-            if ($name == 'id') {
+
+            if (isset($fieldSetup[$name]['ignore']) && $fieldSetup[$name]['ignore']) {
+                continue;
+            } elseif ($name == 'id') {
                 if (isset($field['default']) || request()->all(['id'])['id'] != null) {
                     $type = 'hidden';
                 } else {
