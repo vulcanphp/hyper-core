@@ -165,3 +165,8 @@ function template_exists(string $template): bool
 {
     return file_exists(app_dir('templates/' . str_replace('.php', '', $template) . '.php'));
 }
+
+function fire_script(): string
+{
+    return file_get_contents(__DIR__ . '/../scripts/fire.js');
+}

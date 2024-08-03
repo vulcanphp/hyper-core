@@ -25,6 +25,14 @@ class template
         return $this;
     }
 
+    public function remove(...$keys): self
+    {
+        foreach ($keys as $key) {
+            unset($this->context[$key]);
+        }
+        return $this;
+    }
+
     public function layout(string $layout): self
     {
         $this->layout = $layout;
@@ -34,7 +42,16 @@ class template
     public function render(string $template, array $context = []): string
     {
         $content = $this->template($template, $context);
-        if ($this->layout) {
+        if ('fire-view' === strtolower(request()->header('content-agent', ''))) {
+            response()
+                ->setStatusCode(200)
+                ->setHeader('Content-Type', 'application/json; charset=utf-8');
+            return json_encode([
+                'title'     => $this->context['title'] ?? null,
+                'content'   => $content,
+                'blocks'    => $this->context,
+            ]);
+        } elseif ($this->layout) {
             return $this->template($this->layout, ['content' => $content]);
         }
         return $content;
