@@ -61,7 +61,7 @@ function template(string $template, array $context = []): response
 
 function url(string $path = ''): string
 {
-    return rtrim(application::$app->request->rootUrl . '/' . ltrim($path, '/'), '/');
+    return rtrim(application::$app->request->rootUrl . '/' . ltrim(str_replace(['\\'], ['/'], $path), '/'), '/');
 }
 
 function public_url(string $path = ''): string
