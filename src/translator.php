@@ -53,7 +53,7 @@ class translator
         }
 
         $this->unknownText[] = $text;
-        return "[{$hash}/]";
+        return "[{$hash}]";
     }
 
     private function getHash(string $text): string
@@ -135,7 +135,7 @@ class translator
                 function ($content) {
                     foreach ($this->unknownText as $text) {
                         $hash = $this->getHash($text);
-                        $content = str_replace("[{$hash}/]", $this->translatedTexts[$hash] ?? 'N/A', $content);
+                        $content = str_replace("[{$hash}]", $this->translatedTexts[$hash] ?? 'N/A', $content);
                     }
                     return $content;
                 }
