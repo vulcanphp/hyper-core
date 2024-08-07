@@ -146,9 +146,16 @@ function collect(array $items = []): collect
     return collect::make($items);
 }
 
-function cache(string $name): cache
+$caches = [];
+function cache(string $name = 'default'): cache
 {
-    return new cache($name);
+    global $caches;
+
+    if (!isset($caches[$name])) {
+        $caches[$name] = new cache($name);
+    }
+
+    return $caches[$name];
 }
 
 function __(?string $text = '', bool $strict = false): ?string

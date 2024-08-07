@@ -47,7 +47,7 @@ class template
                 ->setStatusCode(200)
                 ->setHeader('Content-Type', 'application/json; charset=utf-8');
             return json_encode([
-                'title'     => $this->context['title'] ?? null,
+                'title'     => strip_tags($this->context['title'] ?? ''),
                 'content'   => $content,
                 'blocks'    => $this->context,
             ]);

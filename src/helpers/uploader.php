@@ -63,7 +63,7 @@ trait uploader
     protected function removeFiles(string|array $files): void
     {
         foreach ((array) $files as $file) {
-            if (file_exists($filePath = env('upload_dir') . '/' . $file)) {
+            if (is_file($filePath = env('upload_dir') . '/' . $file) && file_exists($filePath)) {
                 unlink($filePath);
             }
         }

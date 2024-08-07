@@ -3,6 +3,8 @@
 namespace hyper;
 
 use Exception;
+use ReflectionFunction;
+use ReflectionMethod;
 
 class router
 {
@@ -73,13 +75,10 @@ class router
                     $route['callback'][0] = new $route['callback'][0];
                 }
                 debugger('app', 'dispatched route');
-                return call_user_func($route['callback'], $request, ...$request->params);
+                return $this->callback($route['callback'], $request);
             }
         }
         debugger('app', "route not matched");
-        if (template_exists('errors/404')) {
-            return template('errors/404')->setStatusCode(404);
-        }
         return new response('Not Found', 404);
     }
 
@@ -92,9 +91,36 @@ class router
         $pattern = str_replace('/', '\/', $pattern);
         if (preg_match('/^' . $pattern . '$/', $request->path, $matches)) {
             array_shift($matches);
+            if (preg_match_all('/\{([^\}]+)\}/', $routePath, $names)) {
+                if (count($names[1]) === count($matches)) {
+                    $matches = array_combine($names[1], $matches);
+                }
+            }
             $request->params = $matches;
             return true;
         }
         return false;
+    }
+
+    private function callback(callable $callback, request $request): response
+    {
+        if (is_array($callback)) {
+            $reflection = new ReflectionMethod($callback[0], $callback[1]);
+        } elseif (is_string($callback) && strpos($callback, '::') !== false) {
+            $parts = explode('::', $callback);
+            $reflection = new ReflectionMethod($parts[0], $parts[1]);
+        } else {
+            $reflection = new ReflectionFunction($callback);
+        }
+        $arguments = [];
+        foreach ($reflection->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            if (in_array($name, ['request', 'response'], true)) {
+                $arguments[$name] = ['request' => $request, 'response' => application::$app->response][$name];
+            } else {
+                $arguments[$name] = $request->params[$name] ?? null;
+            }
+        }
+        return call_user_func($callback, ...$arguments);
     }
 }
