@@ -87,13 +87,14 @@ class router
         if (!in_array($request->method, (array)$routeMethod)) {
             return false;
         }
-        $pattern = preg_replace('/\{[a-zA-Z]+\}/', '([a-zA-Z0-9_-]+)', $routePath);
+        $pattern = preg_replace('/\{[a-zA-Z]+\?\}/', '([a-zA-Z0-9_-]*)', $routePath);
+        $pattern = preg_replace('/\{[a-zA-Z]+\}/', '([a-zA-Z0-9_-]+)', $pattern);
         $pattern = str_replace('/', '\/', $pattern);
         if (preg_match('/^' . $pattern . '$/', $request->path, $matches)) {
             array_shift($matches);
             if (preg_match_all('/\{([^\}]+)\}/', $routePath, $names)) {
                 if (count($names[1]) === count($matches)) {
-                    $matches = array_combine($names[1], $matches);
+                    $matches = array_combine(array_map(fn ($name) => str_replace('?', '', $name), $names[1]), $matches);
                 }
             }
             $request->params = $matches;
