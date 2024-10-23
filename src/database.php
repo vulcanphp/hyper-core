@@ -20,10 +20,10 @@ class database
         return $this->pdo;
     }
 
-    public function query($statement, int|null $fetchMode = null, ...$fetch_mode_args): PDOStatement|false
+    public function query($statement, ...$args): PDOStatement|false
     {
         debugger('query', $statement);
-        return $this->getPdo()->query($statement, $fetchMode, ...$fetch_mode_args);
+        return $this->getPdo()->query($statement, ...$args);
     }
 
     public function prepare(string $statement, array $options = []): PDOStatement|false
@@ -47,6 +47,9 @@ class database
             $this->config['password'] ?? null,
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
         );
+        if ($this->config['driver'] === 'sqlite') {
+            $this->pdo->exec('PRAGMA foreign_keys = ON;');
+        }
         debugger('app', "database initialized for: {$dsn}");
         return $this;
     }

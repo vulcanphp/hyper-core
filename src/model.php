@@ -32,7 +32,7 @@ class model
         return self::get()->where(['id' => $id])->first();
     }
 
-    public static function load(array $data): self
+    public static function load(array $data): static
     {
         $model = new static();
         foreach ($data as $key => $value) {

@@ -51,7 +51,7 @@ class uploader
         }
         // Validate file extension
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        if (!in_array(strtolower($extension), $this->extensions)) {
+        if (!empty($this->extensions) && !in_array(strtolower($extension), $this->extensions)) {
             throw new RuntimeException("Invalid file extension.");
         }
         // Create a unique file name
@@ -81,7 +81,7 @@ class uploader
     {
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $baseName = pathinfo($fileName, PATHINFO_FILENAME);
-        $uniqueName = preg_replace('/[^a-zA-z0-9]+/', '-', $baseName) . '_' . uniqid('', true) . '.' . $extension;
+        $uniqueName = uniqid(preg_replace('/[^a-zA-z0-9]+/', '-', $baseName) . '_') . '.' . $extension;
         return $uniqueName;
     }
 }

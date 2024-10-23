@@ -101,6 +101,35 @@ class collect
         return $this;
     }
 
+    public function multiSort(string $column, bool $desc = false): self
+    {
+        $numbers = array_column($this->items, $column);
+        if ($desc) {
+            array_multisort($numbers, SORT_DESC, $this->items);
+        } else {
+            array_multisort($numbers, SORT_ASC, $this->items);
+        }
+        return $this;
+    }
+
+    public function sortBy(array $fields): self
+    {
+        $items = $this->items;
+        usort($items, function ($a, $b) use ($fields) {
+            foreach ($fields as $field => $direction) {
+                if (!isset($a[$field]) || !isset($b[$field])) {
+                    continue;
+                }
+                $comparison = $a[$field] <=> $b[$field];
+                if ($comparison !== 0) {
+                    return $direction === 'asc' ? $comparison : -$comparison;
+                }
+            }
+            return 0;
+        });
+        return new self($items);
+    }
+
     public function keys()
     {
         return new self(array_keys($this->items));
@@ -156,12 +185,35 @@ class collect
 
     public function except(array $keys): self
     {
-        return new self(array_diff_key($this->items, array_flip($keys)));
+        $removeKeys = function ($array, $keys) use (&$removeKeys) {
+            $filtered = [];
+            foreach ($array as $key => $value) {
+                if (!in_array($key, $keys)) {
+                    $filtered[$key] = is_array($value) ? $removeKeys($value, $keys) : $value;
+                }
+            }
+            return $filtered;
+        };
+        return new self($removeKeys($this->items, $keys));
     }
 
     public function only(array $keys): self
     {
-        return new self(array_intersect_key($this->items, array_flip($keys)));
+        $filterKeys = function ($array, $keys) use (&$filterKeys) {
+            $filtered = [];
+            foreach ($array as $key => $value) {
+                if (in_array($key, $keys)) {
+                    $filtered[$key] = is_array($value) ? $filterKeys($value, $keys) : $value;
+                } elseif (is_array($value)) {
+                    $nested = $filterKeys($value, $keys);
+                    if (!empty($nested)) {
+                        $filtered[$key] = $nested;
+                    }
+                }
+            }
+            return $filtered;
+        };
+        return new self($filterKeys($this->items, $keys));
     }
 
     public function group(string $group): self
@@ -191,12 +243,7 @@ class collect
         if (is_null($callback)) {
             return $this->items[0] ?? $default;
         }
-        foreach ($this->items as $key => $value) {
-            if ($callback($value, $key)) {
-                return $value;
-            }
-        }
-        return $default;
+        return $this->find($callback, $default);
     }
 
     public function last(callable $callback = null, $default = null)

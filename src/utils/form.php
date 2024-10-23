@@ -9,8 +9,11 @@ class form
 {
     private array $fields = [];
 
-    public function __construct(private request $request, private ?model $model = null, array $fields = [])
-    {
+    public function __construct(
+        private request $request,
+        private ?model $model = null,
+        array $fields = []
+    ) {
         if ($model !== null && method_exists($model, 'formFields')) {
             $fields = array_merge($model->formFields(), $fields);
         }
@@ -57,8 +60,11 @@ class form
 
     public function validate(): bool
     {
-        $this->load($this->request->all());
-        $validator = new validator($this->request);
+        $this->load(
+            $this->request->all()
+        );
+
+        $validator = new validator();
         $fields = [];
         foreach ($this->fields as $field) {
             $rules = [];
@@ -74,7 +80,7 @@ class form
             }
             $fields[$field['name']] = $rules;
         }
-        if (!$validator->validate($fields)) {
+        if (!$validator->validate($fields, $this->request->all())) {
             foreach ($validator->getErrors() as $name => $errors) {
                 $this->extend($name, ['hasError' => true, 'errors' => $errors]);
             }
@@ -99,7 +105,9 @@ class form
 
     public function save(): int|bool
     {
-        $this->model = $this->model->load($this->getData());
+        $this->model = $this->model->load(
+            $this->getData()
+        );
         return $this->model->save();
     }
 

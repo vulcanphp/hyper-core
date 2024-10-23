@@ -101,7 +101,7 @@ class query
         }
         if (!isset($config['update'])) {
             $fields = array_filter(array_keys($data[0]), fn ($field) => !in_array($field, $config['conflict']));
-            $config['update'] = array_map(fn ($field) => [$field => $field], $fields);
+            $config['update'] = array_merge(...array_map(fn ($field) => [$field => $field], $fields));
         }
         return $this->insert($data, $config);
     }

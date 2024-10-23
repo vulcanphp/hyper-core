@@ -87,9 +87,9 @@ class router
         if (!in_array($request->method, (array)$routeMethod)) {
             return false;
         }
-        $pattern = preg_replace('/\{[a-zA-Z]+\?\}/', '([a-zA-Z0-9_-]*)', $routePath);
+        $pattern = preg_replace('/\/\{[a-zA-Z]+\?\}/', '(?:/([a-zA-Z0-9_-]*))?', $routePath);
         $pattern = preg_replace('/\{[a-zA-Z]+\}/', '([a-zA-Z0-9_-]+)', $pattern);
-        $pattern = str_replace('/', '\/', $pattern);
+        $pattern = str_replace(['/', '*'], ['\/', '(.*)'], $pattern);
         if (preg_match('/^' . $pattern . '$/', $request->path, $matches)) {
             array_shift($matches);
             if (preg_match_all('/\{([^\}]+)\}/', $routePath, $names)) {
@@ -114,12 +114,12 @@ class router
             $reflection = new ReflectionFunction($callback);
         }
         $arguments = [];
-        foreach ($reflection->getParameters() as $parameter) {
+        foreach ($reflection->getParameters() as $key => $parameter) {
             $name = $parameter->getName();
             if (in_array($name, ['request', 'response'], true)) {
                 $arguments[$name] = ['request' => $request, 'response' => application::$app->response][$name];
             } else {
-                $arguments[$name] = $request->params[$name] ?? null;
+                $arguments[$name] = $request->params[$name] ?? ($request->params[$key] ?? null);
             }
         }
         return call_user_func($callback, ...$arguments);

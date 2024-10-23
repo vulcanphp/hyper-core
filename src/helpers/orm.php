@@ -52,13 +52,14 @@ trait orm
         }
         // load lazy orm data
         $config = $this->orm()[$name] ?? false;
-        if (!$config) {
-            throw new RuntimeException("Orm({$name}) does not specified in: " . static::class);
-        } elseif (isset($config['lazy']) && !$config['lazy']) {
-            throw new RuntimeException("Lazy load has been disabled for Orm({$name}), " . static::class);
+        if ($config) {
+            if (isset($config['lazy']) && !$config['lazy']) {
+                throw new RuntimeException("Lazy load has been disabled for Orm({$name}), " . static::class);
+            }
+            $this->__handleOrm([$this], $config, $name);
+            return $this->orm[$name];
         }
-        $this->__handleOrm([$this], $config, $name);
-        return $this->orm[$name];
+        return null;
     }
 
     private function __handleOrm(array $data, array $config, string $with): array

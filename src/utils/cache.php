@@ -52,7 +52,7 @@ class cache
             $this->eraseExpired();
         }
         if (!$this->has($key)) {
-            $this->store($key, call_user_func($callback), $expire);
+            $this->store($key, call_user_func($callback, $this), $expire);
         }
         return $this->retrieve($key);
     }
@@ -106,7 +106,7 @@ class cache
 
     public function flush(): self
     {
-        $this->cachePath = [];
+        $this->cacheData = [];
         $this->changed = true;
         debugger('cache', "cache flushed ({$this->name}) from: {$this->cachePath}");
         return $this;

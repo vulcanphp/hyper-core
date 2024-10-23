@@ -15,8 +15,8 @@ class request
         $this->rootUrl = $this->parseRootUrl();
         $this->url = $this->parseUrl();
         $this->fileUploads = $_FILES;
-        $this->queryParams = $this->sanitize($_GET);
-        $this->postParams = $this->sanitize($_POST);
+        $this->queryParams = $_GET;
+        $this->postParams = $_POST;
         $this->postParams = array_merge($this->postParams, $this->parsePhpInput());
     }
 
@@ -27,7 +27,7 @@ class request
             if (!empty($params)) {
                 $params = json_decode($params, true);
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    return $this->sanitize($params);
+                    return $params;
                 }
             }
         }
@@ -50,19 +50,6 @@ class request
     private function parseUrl(): string
     {
         return rtrim($this->rootUrl . '/' . ltrim($this->serverParams['REQUEST_URI'] ?? '', '/'), '/');
-    }
-
-    private function sanitize(array $data): array
-    {
-        $sanitized = [];
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $sanitized[$key] = $this->sanitize($value);
-            } else {
-                $sanitized[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-            }
-        }
-        return $sanitized;
     }
 
     public function get(string $key, $default = null): mixed
@@ -108,5 +95,21 @@ class request
     public function accept(string $contentType): bool
     {
         return strpos($this->header('accept', ''), $contentType) !== false;
+    }
+
+    public function ip(): false|string
+    {
+        $ip = '';
+        if (!empty($this->header('client-ip'))) {
+            $ip = $this->header('client-ip');
+        } elseif (!empty($this->header('x-forwarded-for'))) {
+            $ips = explode(',', $this->header('x-forwarded-for'));
+            $ip = trim(end($ips));
+        } elseif (!empty($this->header('cf-connecting-ip'))) {
+            $ip = $this->header('cf-connecting-ip');
+        } elseif (!empty($this->header('remote-addr'))) {
+            $ip = $this->header('remote-addr');
+        }
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : false;
     }
 }

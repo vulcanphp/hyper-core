@@ -11,6 +11,8 @@ use hyper\template;
 use hyper\utils\cache;
 use hyper\utils\collect;
 use hyper\session;
+use hyper\utils\sanitizer;
+use hyper\utils\validator;
 
 // Foundation Shortcut
 function app(): application
@@ -56,7 +58,9 @@ function query(string $table): query
 function template(string $template, array $context = []): response
 {
     $engine = new template();
-    return application::$app->response->write($engine->render($template, $context));
+    return application::$app->response->write(
+        $engine->render($template, $context)
+    );
 }
 
 function url(string $path = ''): string
@@ -171,6 +175,28 @@ function vite($config): vite
 function template_exists(string $template): bool
 {
     return file_exists(app_dir('templates/' . str_replace('.php', '', $template) . '.php'));
+}
+
+function input(array $filter = []): sanitizer
+{
+    return new sanitizer(application::$app->request->all($filter));
+}
+
+function validator(array $rules, array $data): sanitizer
+{
+    $validator = new validator();
+    $result = $validator->validate($rules, $data);
+
+    if ($result) {
+        return new sanitizer($result);
+    }
+
+    throw new Exception($validator->getFirstError() ?? 'validation failed');
+}
+
+function _e(string $text): string
+{
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
 function fire_script(): string

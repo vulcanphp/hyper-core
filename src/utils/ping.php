@@ -121,4 +121,10 @@ class ping
 
         throw new InvalidArgumentException("Undefined Method: {$name}");
     }
+
+    public static function __callStatic($name, $arguments)
+    {
+        $ping = new static();
+        return call_user_func([$ping, $name], ...$arguments);
+    }
 }

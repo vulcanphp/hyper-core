@@ -2,21 +2,16 @@
 
 namespace hyper\utils;
 
-use hyper\request;
-
 class validator
 {
     private array $errors = [];
 
-    public function __construct(private request $request)
+    public function validate(array $rules, array $inputData): bool|array
     {
-    }
-
-    public function validate(array $rules): bool|array
-    {
-        $data = $this->request->all();
+        $validData = [];
         foreach ($rules as $field => $fieldRules) {
-            $value = $data[$field] ?? null;
+            $value = $inputData[$field] ?? null;
+            $valid = true;
             foreach ($fieldRules as $rule) {
                 $ruleName = $rule;
                 $ruleParams = [];
@@ -33,19 +28,24 @@ class validator
                     'text' => !is_null($value) ? is_string($value) : true,
                     'min' => !is_null($value) ? strlen($value) >= (int)$ruleParams[0] : true,
                     'max' => !is_null($value) ? strlen($value) <= (int)$ruleParams[0] : true,
+                    'length' => !is_null($value) ? strlen($value) == (int)$ruleParams[0] : true,
+                    'equal' => !is_null($value) ? $value == ($inputData[$ruleParams[0]] ?? '') : true,
                     default => true
                 };
                 if (!$valid) {
                     $this->addError($field, $ruleName, $ruleParams);
                 }
             }
+            if ($valid) {
+                $validData[$field] = $value;
+            }
         }
-        return empty($this->errors) ? $data : false;
+        return empty($this->errors) ? $validData : false;
     }
 
     private function addError(string $field, string $rule, array $params = []): void
     {
-        $prettyField = ucwords(str_replace(['-', '_'], ' ', $field));
+        $prettyField = $this->prettyField($field);
         $messages = [
             'required' => sprintf("The %s field is required.", $prettyField),
             'email' => sprintf("The %s field must be a valid email address.", $prettyField),
@@ -54,13 +54,25 @@ class validator
             'array' => sprintf("The %s field must be an array.", $prettyField),
             'text' => sprintf("The %s field must be a text.", $prettyField),
             'min' => sprintf("The %s field must be at least %s characters long.", $prettyField, $params[0] ?? 0),
-            'max' => sprintf("The %s field must not exceed %s characters.", $prettyField, $params[0] ?? 0)
+            'max' => sprintf("The %s field must not exceed %s characters.", $prettyField, $params[0] ?? 0),
+            'length' => sprintf("The %s field must be %s characters.", $prettyField, $params[0] ?? 0),
+            'equal' => sprintf("The %s field must be equal to %s field.", $prettyField, $this->prettyField($params[0] ?? '')),
         ];
         $this->errors[$field][] = $messages[$rule] ?? "The $prettyField field has an invalid value.";
+    }
+
+    private function prettyField(string $field): string
+    {
+        return ucwords(str_replace(['-', '_'], ' ', $field));
     }
 
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    public function getFirstError(): ?string
+    {
+        return !empty($this->errors) ? (array_values(array_values($this->errors)[0] ?? [])[0] ?? null) : null;
     }
 }
