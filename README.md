@@ -20,6 +20,8 @@ Core Classes and Functionalities for Hyper MVT Framework
     $database = new database([
         'driver' => 'sqlite', // mysql
         'file' => __DIR__ . '/../sqlite.db', // required when driver is sqlite
+
+        // when driver is serverside
         'host' => 'localhost',
         'user' => '{user}',
         'password' => '{password}',
@@ -27,7 +29,7 @@ Core Classes and Functionalities for Hyper MVT Framework
         'name' => 'dbname',
         'charset' => 'utf8mb4'
     ]);
-    var_dump($database->prepare('SELECT * FROM students'));
+    dump($database->prepare('SELECT * FROM students'));
     ```
 
 ### Debugger
@@ -106,7 +108,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     use hyper\template;
     $engine = new template(__DIR__);
-    var_dump($engine->render('welcome', ['message' => 'Welcome to App']));
+    dump($engine->render('welcome', ['message' => 'Welcome to App']));
     ```
 
 ### Translator
@@ -120,9 +122,9 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Description:** Cache class for caching data.
 - **Example:**
     ```php
-    use hyper\cache;
+    use hyper\utils\cache;
     $cache = new cache('home');
-    var_dump($cache->load('time', fn() => 'Now :' . time(), '5 minutes'));
+    dump($cache->load('time', fn() => 'Now :' . time(), '5 minutes'));
     ```
 
 ### Collect
@@ -146,7 +148,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     
     // validate form
     if($form->validate()){
-        var_dump($form->getData());
+        dump($form->getData());
     }else{
         echo $form->render();
     }
@@ -177,7 +179,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     use hyper\utils\paginator;
     $paginator = new paginator(total: 500, limit: 20);
     $paginator->setData([...]);
-    var_dump($paginator->getData(), $paginator->getLinks());
+    dump($paginator->getData(), $paginator->getLinks());
     ```
 
 ### Ping
@@ -188,7 +190,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     use hyper\utils\ping;
     $http = new ping();
     $http->download(__DIR__.'/downloads/file.jpg');
-    var_dump($http->get('http://domain.com/download-file'));
+    dump($http->get('http://domain.com/download-file'));
     ```
 
 ### Uploader
@@ -198,7 +200,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     use hyper\utils\uploader;
     $uploader = new uploader(uploadDir: __DIR__ .'/uploads', extensions: ['jpe', 'png'], multiple: true);
-    var_dump($uploader->upload($_FILES['upload']));
+    dump($uploader->upload($_FILES['upload']));
     ```
 
 ### Validator
@@ -207,11 +209,11 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Example:**
     ```php
     use hyper\utils\validator;
-    $validator = new validator(request: $request);
-    var_dump($validator->validate([
+    $validator = new validator();
+    dump($validator->validate([
         'name' => ['required', 'min:10', 'max:60'],
         'email' => ['required', 'email'],
-    ]));
+    ], $request->all()));
     ```
 
 ## Helper Classes
@@ -237,7 +239,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     }
 
     $form = new form(request: $request, model: new student());
-    var_dump($form->render());
+    dump($form->render());
     ```
 
 ### Mail
@@ -274,7 +276,7 @@ Core Classes and Functionalities for Hyper MVT Framework
         }
     }
 
-    var_dump(student::with(['subjects', 'results', 'department'])->paginate(20));
+    dump(student::with(['subjects', 'results', 'department'])->paginate(20));
     ```
 
 ### Uploader
@@ -308,6 +310,10 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Class:** `vite`
 - **Description:** Vite helper class for asset management.
 
+### Drawer
+- **Class:** `drawer`
+- **Description:** A utility to manage array data.
+
 ## Shortcut Functions
 
 ### Application
@@ -333,6 +339,11 @@ Core Classes and Functionalities for Hyper MVT Framework
 ### Router
 - **Function:** `router()`
 - **Description:** Returns the router instance.
+
+### Input
+- **Functions:**
+  - `validator()` - Validates the given data from request.
+  - `input()` - Retrieve and sanitize input data.
 
 ### Database
 - **Function:** `database()`
@@ -376,8 +387,9 @@ Core Classes and Functionalities for Hyper MVT Framework
   - `csrf()` - Returns the CSRF token with an HTML hidden input.
 
 ### User
-- **Function:** `user()`
-- **Description:** Returns the logged-in user.
+- **Function:**
+    - `user()` - Returns the logged-in user.
+    - `is_quest()` - Determine if a user logged-in or not.
 
 ### Collections
 - **Function:** `collect()`
@@ -396,13 +408,9 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Description:** Returns a new vite class instance.
 
 ### Templates
-- **Function:** `template_exists()`
-- **Description:** Checks if a template exists.
-
-### Site Settings
 - **Functions:**
-  - `setting(string $layer, string $key, $default): mixed` - Returns the value for this setting.
-  - `settings()` - Returns the settings drawer.
+  - `template_exists()` - Checks if a template exists.
+  - `_e()` - Escapes a string for safe output.
 
 ## Conclusion
 
