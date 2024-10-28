@@ -7,15 +7,43 @@ use hyper\query;
 use PDO;
 use RuntimeException;
 
+/**
+ * Trait orm
+ * 
+ * Provides functionality for handling object-relational mapping (ORM) in a PHP application.
+ * It includes methods for managing relationships between models, such as one-to-one, one-to-many,
+ * and many-to-many, with support for lazy loading and eager loading of related data.
+ * 
+ * @package hyper\helpers
+ * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
+ */
 trait orm
 {
+    /**
+     * @var array $orm
+     * Holds the loaded ORM data for the current instance.
+     */
     protected array $orm;
 
+    /**
+     * Method to define ORM configurations for the model.
+     * Should be overridden in the implementing class to specify the ORM relationships.
+     * 
+     * @return array
+     */
     protected function orm(): array
     {
         return [];
     }
 
+    /**
+     * Allows for eager loading of related ORM data by specifying the relationships to load.
+     * 
+     * @param array|string $orm The relationships to load, or '*' to load all configured relationships.
+     * @return query The query object with attached mappers for handling the related data.
+     * 
+     * @throws RuntimeException If the specified relationship is not defined in the ORM configuration.
+     */
     public static function with(array|string $orm = '*'): query
     {
         $model = new static();
@@ -39,11 +67,25 @@ trait orm
         return $query;
     }
 
+    /**
+     * Retrieve the registered ORM configurations for the model.
+     * 
+     * @return array
+     */
     public function getRegisteredOrm(): array
     {
         $registeredOrm = $this->orm();
         return $registeredOrm;
     }
+
+    /**
+     * Magic getter method to load and return ORM data on demand (lazy loading).
+     * 
+     * @param string $name The name of the ORM relationship to load.
+     * @return mixed|null The related data if available, or null if not found.
+     * 
+     * @throws RuntimeException If lazy loading is disabled for the requested relationship.
+     */
 
     public function __get($name)
     {
@@ -62,6 +104,17 @@ trait orm
         return null;
     }
 
+    /**
+     * Handles loading of ORM data based on the specified configuration.
+     * Supports different relationship types: 'one', 'many', and 'many-x'.
+     * 
+     * @param array $data The main data set to attach related data to.
+     * @param array $config The configuration for the ORM relationship.
+     * @param string $with The name of the relationship to process.
+     * @return array The data with attached ORM relationships.
+     * 
+     * @throws RuntimeException If an invalid ORM type is specified.
+     */
     private function __handleOrm(array $data, array $config, string $with): array
     {
         return match ($config['has']) {
@@ -72,6 +125,14 @@ trait orm
         };
     }
 
+    /**
+     * Handles many-to-many relationships where an intermediate table is used.
+     * 
+     * @param array $data The main data set.
+     * @param array $config The configuration for the many-x relationship.
+     * @param string $with The name of the relationship.
+     * @return array The data with the many-x related data attached.
+     */
     private function __manyX(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
@@ -88,6 +149,14 @@ trait orm
         );
     }
 
+    /**
+     * Handles one-to-many relationships.
+     * 
+     * @param array $data The main data set.
+     * @param array $config The configuration for the many relationship.
+     * @param string $with The name of the relationship.
+     * @return array The data with the many related data attached.
+     */
     private function __many(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
@@ -103,6 +172,15 @@ trait orm
         );
     }
 
+    /**
+     * Parses and attaches related ORM data to the main data set.
+     * 
+     * @param array $data The main data set.
+     * @param array $objects The related objects fetched based on the ORM configuration.
+     * @param object $object The related model object.
+     * @param string $with The name of the relationship.
+     * @return array The data with attached ORM data.
+     */
     private function __parseOrmData(array $data, $objects, $object, $with): array
     {
         foreach ($data as $d) {
@@ -118,6 +196,14 @@ trait orm
         return $data;
     }
 
+    /**
+     * Handles one-to-one relationships.
+     * 
+     * @param array $data The main data set.
+     * @param array $config The configuration for the one relationship.
+     * @param string $with The name of the relationship.
+     * @return array The data with the one related data attached.
+     */
     private function __one(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
@@ -140,6 +226,11 @@ trait orm
         return $data;
     }
 
+    /**
+     * Extracts form fields for ORM-related data based on the configuration.
+     * 
+     * @return array An array of form fields for managing ORM relationships.
+     */
     protected function extractOrmFields(): array
     {
         $fields = [];
@@ -178,6 +269,12 @@ trait orm
         return $fields;
     }
 
+    /**
+     * Validates and handles form submissions for many-x relationships, 
+     * synchronizing the intermediate table records.
+     * 
+     * @return void
+     */
     protected function checkOrmFormFields(): void
     {
         foreach ($this->orm() as $config) {

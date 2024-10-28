@@ -4,33 +4,77 @@ namespace hyper;
 
 use Throwable;
 
+/**
+ * Class debugger
+ * 
+ * Enabled debugging mode and logs messages of various types.
+ * 
+ * @package hyper
+ * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
+ */
 class debugger
 {
+    /**
+     * Stores log entries of different types if debug mode is enabled.
+     * 
+     * @var array
+     */
     private array $logs = [];
 
+    /**
+     * Create a debugges classe and set php default error handlers.
+     * 
+     * @param bool $debug 
+     * @return void 
+     */
     public function __construct(protected bool $debug = false)
     {
+        // Set custom error, exception, and shutdown handlers.
         set_error_handler([$this, 'handleError']);
         set_exception_handler([$this, 'handleException']);
         register_shutdown_function([$this, 'handleShutdown']);
     }
 
-    public function log(string $type,  mixed $log): void
+    /**
+     * Logs messages of various types if debugging is enabled.
+     * 
+     * @param string $type Type of the log message (e.g., 'error', 'info').
+     * @param mixed $log The content of the log message.
+     */
+    public function log(string $type, mixed $log): void
     {
         if ($this->debug) {
             $this->logs[$type][] = [
+                // Store serialized log if not a string.
                 'message' => is_string($log) ? $log : serialize($log),
+
+                // Timestamp for when the log was created.
                 'time' => time(),
-                'memory_usage' => memory_get_usage()
+
+                // Memory usage at the time of logging.
+                'memory_usage' => memory_get_usage(),
             ];
         }
     }
 
+    /**
+     * Custom error handler function.
+     * 
+     * @param int $errno The level of the error raised.
+     * @param string $errstr The error message.
+     * @param string $errfile The filename where the error was raised.
+     * @param int $errline The line number where the error was raised.
+     */
     public function handleError(int $errno, string $errstr, string $errfile, int $errline): void
     {
         $this->renderError('Error', $errstr, $errfile, $errline);
     }
 
+    /**
+     * Custom exception handler.
+     * 
+     * @param Throwable $exception The exception instance.
+     */
     public function handleException(Throwable $exception): void
     {
         $this->renderError(
@@ -40,9 +84,14 @@ class debugger
             $exception->getLine(),
             $exception->getTrace()
         );
+
+        // Exit after rendering the exception.
         exit(0);
     }
 
+    /**
+     * Handles shutdown errors when the script ends unexpectedly.
+     */
     public function handleShutdown(): void
     {
         $error = error_get_last();
@@ -51,12 +100,24 @@ class debugger
         }
     }
 
+    /**
+     * Renders the error or exception details as an HTML response.
+     * 
+     * @param string $type Type of error (e.g., 'Error', 'Exception').
+     * @param string $message Error message to display.
+     * @param string $file File where the error occurred.
+     * @param int $line Line number of the error.
+     * @param array $trace Optional stack trace array.
+     */
     private function renderError(string $type, string $message, string $file, int $line, array $trace = []): void
     {
         if (!headers_sent()) {
+            // Set HTTP response code to 500 for server error.
             http_response_code(500);
         }
+
         if ($this->debug) {
+            // Detailed error output with stack trace if debug mode is enabled.
             echo <<<HTML
                 <!DOCTYPE html>
                 <html lang="en">
@@ -72,12 +133,13 @@ class debugger
                             <h1>{$type}: {$message}</h1>
                             <p><span class="file">{$file}</span> at line <span class="line">{$line}</span></p>
                         </div>
-                        {$this->formatTrace($trace)}
+                        {$this->parseTraceHtml($trace)}
                     </div>
                 </body>
                 </html>
             HTML;
         } else {
+            // Simplified error output if debug mode is disabled.
             echo <<<HTML
                 <!DOCTYPE html>
                     <html lang="en">
@@ -100,9 +162,18 @@ class debugger
         }
     }
 
-    private function formatTrace(array $trace): string
+    /**
+     * Prase/Formats the stack trace into an HTML format for display.
+     * 
+     * @param array $trace Array of stack trace details.
+     * @return string Formatted HTML representation of the trace.
+     */
+    private function parseTraceHtml(array $trace): string
     {
+        // Holds the error trace html markup.
         $traceHtml = '';
+
+        // Convert to a error trace (string) from a exception array.
         foreach ($trace as $index => $frame) {
             $file = $frame['file'] ?? '[internal function]';
             $line = $frame['line'] ?? '';
@@ -112,6 +183,8 @@ class debugger
             $args = isset($frame['args']) ? $this->formatArgs($frame['args']) : '';
             $traceHtml .= "#{$index} {$file}({$line}): {$class}{$type}{$function}({$args})\n";
         }
+
+        // Add a html wrapper for all traces item.
         if (!empty($traceHtml)) {
             $traceHtml = htmlspecialchars($traceHtml, ENT_QUOTES, 'UTF-8');
             $traceHtml = <<<HTML
@@ -121,14 +194,26 @@ class debugger
                 </div>
             HTML;
         }
+
+        // returns error trace html.
         return $traceHtml;
     }
 
+    /**
+     * Formats function arguments in the trace for better readability.
+     * 
+     * @param array $args Array of function arguments.
+     * @return string Formatted arguments as a string.
+     */
     private function formatArgs(array $args): string
     {
         return implode(', ', array_map(fn ($arg) => is_object($arg) ? get_class($arg) : gettype($arg), $args));
     }
 
+    /**
+     * Destructor that displays logged debug information at the end of
+     * script execution if debug mode is enabled.
+     */
     public function __destruct()
     {
         if ($this->debug && strpos($_SERVER['HTTP_ACCEPT'], 'text/html') !== false) {

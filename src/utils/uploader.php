@@ -4,8 +4,30 @@ namespace hyper\utils;
 
 use RuntimeException;
 
+/**
+ * Class uploader
+ *
+ * Handles file uploads with options for validating file extensions, setting a maximum file size, 
+ * supporting multiple files, resizing and compressing images, and storing files in a specific directory.
+ * 
+ * @package hyper\utils
+ * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
+ */
 class uploader
 {
+    /**
+     * Constructor for uploader.
+     *
+     * @param string $uploadDir Directory where files will be uploaded.
+     * @param array $extensions Allowed file extensions (e.g., ['jpg', 'png']).
+     * @param bool $multiple Whether multiple file uploads are allowed.
+     * @param int $maxSize Maximum allowed file size in bytes. Default is 1MB (1048576 bytes).
+     * @param array|null $resize Optional dimensions to resize the image, e.g., ['width' => 100, 'height' => 100].
+     * @param array|null $resizes Optional multiple resize dimensions, e.g., [['width' => 100, 'height' => 100], ...].
+     * @param int|null $compress Optional image compression level (1-100).
+     *
+     * @throws RuntimeException If the upload directory is not writable.
+     */
     public function __construct(
         public string $uploadDir,
         public array $extensions = [],
@@ -16,13 +38,19 @@ class uploader
         public ?int $compress = null,
     ) {
         // Ensure the upload directory exists and is writable
-        if (!is_dir($this->uploadDir)) {
-            mkdir($this->uploadDir, 0777, true);
-        } elseif (!is_writable($this->uploadDir)) {
+        if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0777, true)) {
+            throw new RuntimeException("Failed to create upload directory.");
+        } elseif (!is_writable($this->uploadDir) && !chmod($this->uploadDir, 0777)) {
             throw new RuntimeException("Upload directory is not writable.");
         }
     }
 
+    /**
+     * Uploads a file or multiple files.
+     *
+     * @param array $files Array containing file details (e.g., $_FILES['file']).
+     * @return string|array Returns the file path(s) of the uploaded file(s).
+     */
     public function upload(array $files): string|array
     {
         if ($this->multiple) {
@@ -43,41 +71,67 @@ class uploader
         }
     }
 
-    private function processUpload(array $file): array|string
+    /** @Add helpers methods for uploader object */
+
+    /**
+     * Processes the upload for a single file, including validation, file renaming, and optional resizing/compression.
+     *
+     * @param array $file Array containing file details such as name, type, tmp_name, error, and size.
+     * @return array|string Returns the file path of the uploaded file or an array of paths if resizing options are applied.
+     * @throws RuntimeException If file validation fails or moving the file fails.
+     */
+    protected function processUpload(array $file): array|string
     {
         // Validate file size
         if ($file['size'] > $this->maxSize) {
             throw new RuntimeException("File size exceeds the maximum limit.");
         }
+
         // Validate file extension
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         if (!empty($this->extensions) && !in_array(strtolower($extension), $this->extensions)) {
             throw new RuntimeException("Invalid file extension.");
         }
+
         // Create a unique file name
         $uniqueName = $this->generateUniqueFileName($file['name']);
         $destination = $this->uploadDir . DIRECTORY_SEPARATOR . $uniqueName;
+
         // Move the uploaded file to the destination
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
             throw new RuntimeException("Failed to move uploaded file.");
         }
-        // compress, resize and bulk resize image
+
+        // Compress, resize, and bulk resize image if options are set and the file is an image
         if ((isset($this->compress) || isset($this->resize) || isset($this->resizes)) && in_array($extension, ['jpg', 'jpeg', 'png'])) {
             $image = new image($destination);
             if (isset($this->compress)) {
                 $image->compress($this->compress);
             }
             if (isset($this->resize)) {
-                $image->resize(array_keys($this->resize)[0], array_values($this->resize)[0]);
+                $image->resize(
+                    array_keys($this->resize)[0],
+                    array_values($this->resize)[0]
+                );
             }
             if (isset($this->resizes)) {
-                $destination = array_merge([$destination], $image->bulkResize($this->resizes));
+                $destination = array_merge(
+                    [$destination],
+                    $image->bulkResize($this->resizes)
+                );
             }
         }
+
         return $destination;
     }
 
-    private function generateUniqueFileName(string $fileName): string
+    /**
+     * Generates a unique file name based on the original file name and a unique identifier.
+     *
+     * @param string $fileName Original file name.
+     * @return string Generated unique file name.
+     */
+    protected function generateUniqueFileName(string $fileName): string
     {
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $baseName = pathinfo($fileName, PATHINFO_FILENAME);
