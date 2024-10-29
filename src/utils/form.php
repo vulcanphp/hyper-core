@@ -264,16 +264,36 @@ class form
         // Dynamically add input element classe names, and returns as string.
         return str_ireplace(
             [
-                '{groupClass}', '{labelClass}', '{inputClass}', '{inputErrorClass}', '{checkboxClass}',
-                '{checkboxErrorClass}', '{textareaClass}', '{textareaErrorClass}', '{selectClass}',
-                '{selectErrorClass}', '{radioClass}', '{radioErrorClass}', '{errorListClass}', '{errorListItemClass}'
+                '{groupClass}',
+                '{labelClass}',
+                '{inputClass}',
+                '{inputErrorClass}',
+                '{checkboxClass}',
+                '{checkboxErrorClass}',
+                '{textareaClass}',
+                '{textareaErrorClass}',
+                '{selectClass}',
+                '{selectErrorClass}',
+                '{radioClass}',
+                '{radioErrorClass}',
+                '{errorListClass}',
+                '{errorListItemClass}'
             ],
             [
-                $class['groupClass'] ?? '', $class['labelClass'] ?? '', $class['inputClass'] ?? '',
-                $class['inputErrorClass'] ?? '', $class['checkboxClass'] ?? '', $class['checkboxErrorClass'] ?? '',
-                $class['textareaClass'] ?? '', $class['textareaErrorClass'] ?? '', $class['selectClass'] ?? '',
-                $class['selectErrorClass'] ?? '', $class['radioClass'] ?? '', $class['radioErrorClass'] ?? '',
-                $class['errorListClass'] ?? '', $class['errorListItemClass'] ?? ''
+                $class['groupClass'] ?? '',
+                $class['labelClass'] ?? '',
+                $class['inputClass'] ?? '',
+                $class['inputErrorClass'] ?? '',
+                $class['checkboxClass'] ?? '',
+                $class['checkboxErrorClass'] ?? '',
+                $class['textareaClass'] ?? '',
+                $class['textareaErrorClass'] ?? '',
+                $class['selectClass'] ?? '',
+                $class['selectErrorClass'] ?? '',
+                $class['radioClass'] ?? '',
+                $class['radioErrorClass'] ?? '',
+                $class['errorListClass'] ?? '',
+                $class['errorListItemClass'] ?? ''
             ],
             implode("\n", $output)
         );
@@ -317,7 +337,7 @@ class form
 
         return match ($field['type']) {
             'text', 'hidden', 'number', 'color', 'password', 'range', 'search', 'datetime-local', 'date', 'time', 'email' => "<input type=\"{$field['type']}\" name=\"{$field['name']}\" id=\"{$field['id']}\" value=\"{$field['value']}\" placeholder=\"{$field['placeholder']}\" $attrs class=\"{inputClass} " . ($field['hasError'] ? '{inputErrorClass}' : '') . "\" $required>",
-            'file' => "<input type=\"file\" name=\"{$field['name']}" . ($field['multiple'] ? '[]' : '') . "\" id=\"{$field['id']}\" $attrs class=\"{inputClass} " . ($field['hasError'] ? '{inputErrorClass}' : '') . "\" " . ($field['multiple'] ? 'multiple' : '') . " " . (!isset($field['value']) ? $required : '') . "> " . (isset($field['value']) ?  (is_array($field['value']) ? count($field['value']) . ' files uploaded' : '') : '') . (isset($field['value']) ? '<input type="hidden" name="_' . $field['name'] . '" value="' .  implode(',', (array) $field['value']) . '">' . (isset($field['value']) ? ('<p style="font-size:12px;margin-top: 2px;">' . implode('<br/>', array_map(fn ($file) => '<a href="' . media_url($file) . '" target="_blank">' . $file . '</a>', (array) $field['value'])) . '</p>') : '') : ''),
+            'file' => "<input type=\"file\" name=\"{$field['name']}" . ($field['multiple'] ? '[]' : '') . "\" id=\"{$field['id']}\" $attrs class=\"{inputClass} " . ($field['hasError'] ? '{inputErrorClass}' : '') . "\" " . ($field['multiple'] ? 'multiple' : '') . " " . (!isset($field['value']) ? $required : '') . "> " . (isset($field['value']) ? (is_array($field['value']) ? count($field['value']) . ' files uploaded' : '') : '') . (isset($field['value']) ? '<input type="hidden" name="_' . $field['name'] . '" value="' . implode(',', (array) $field['value']) . '">' . (isset($field['value']) ? ('<p style="font-size:12px;margin-top: 2px;">' . implode('<br/>', array_map(fn($file) => '<a href="' . media_url($file) . '" target="_blank">' . $file . '</a>', (array) $field['value'])) . '</p>') : '') : ''),
             'checkbox' => "<label class=\"{checkboxClass} " . ($field['hasError'] ? '{checkboxErrorClass}' : '') . "\"><input type=\"checkbox\" name=\"{$field['name']}\" id=\"{$field['id']}\" value=\"on\" " . ($field['value'] ? 'checked' : '') . " $attrs $required> " . $field['placeholder'] . "</label>",
             'radio' => $this->renderRadio($field),
             'select' => $this->renderSelect($field),
@@ -399,7 +419,7 @@ class form
             return '';
         }
 
-        $errorMessages = array_map(fn ($error) => "<li class=\"{errorListItemClass}\">" . __($error) . "</li>", $field['errors']);
+        $errorMessages = array_map(fn($error) => "<li class=\"{errorListItemClass}\">" . __($error) . "</li>", $field['errors']);
         $errorMessages = implode("\n", $errorMessages);
 
         return <<<HTML

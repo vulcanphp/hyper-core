@@ -50,11 +50,10 @@ function response(): response
  * @param string $url The URL to redirect to.
  * @param bool $replace Whether to replace the current header. Default is true.
  * @param int $httpCode The HTTP status code for the redirection. Default is 0.
- * @return \hyper\response The response after setting the redirect.
  */
-function redirect(string $url, bool $replace = true, int $httpCode = 0)
+function redirect(string $url, bool $replace = true, int $httpCode = 0): void
 {
-    return application::$app->response->redirect($url, $replace, $httpCode);
+    application::$app->response->redirect($url, $replace, $httpCode);
 }
 
 /**
@@ -305,7 +304,7 @@ function dd(...$args)
  */
 function env(string $key, $default = null): mixed
 {
-    return application::$app->env[$key] ??  $default;
+    return application::$app->env[$key] ?? $default;
 }
 
 /**

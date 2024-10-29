@@ -44,15 +44,15 @@ class validator
 
                 // Apply validation rule
                 $valid = match ($ruleName) {
-                    'required' => !empty($value),
+                    'required' => !empty($value) || !in_array($value, [0, true, false], true),
                     'email' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_EMAIL) : true,
                     'url' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_URL) : true,
                     'number' => !is_null($value) ? is_numeric($value) : true,
                     'array' => !is_null($value) ? is_array($value) : true,
                     'text' => !is_null($value) ? is_string($value) : true,
-                    'min' => !is_null($value) ? strlen($value) >= (int)$ruleParams[0] : true,
-                    'max' => !is_null($value) ? strlen($value) <= (int)$ruleParams[0] : true,
-                    'length' => !is_null($value) ? strlen($value) == (int)$ruleParams[0] : true,
+                    'min' => !is_null($value) ? strlen($value) >= (int) $ruleParams[0] : true,
+                    'max' => !is_null($value) ? strlen($value) <= (int) $ruleParams[0] : true,
+                    'length' => !is_null($value) ? strlen($value) == (int) $ruleParams[0] : true,
                     'equal' => !is_null($value) ? $value == ($inputData[$ruleParams[0]] ?? '') : true,
                     default => true
                 };

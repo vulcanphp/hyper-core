@@ -107,7 +107,7 @@ class template
      */
     public function render(string $template, array $context = []): string
     {
-        $content = $this->template($template, $context);
+        $content = $this->include($template, $context);
 
         // Check if request is AJAX-based.
         if ('fire-view' === application::$app->request->header('content-agent')) {
@@ -118,13 +118,13 @@ class template
 
             // Returns JSON response for AJAX request.
             return json_encode([
-                'title'   => strip_tags($this->context['title'] ?? ''),
+                'title' => strip_tags($this->context['title'] ?? ''),
                 'content' => $content,
-                'blocks'  => $this->context,
+                'blocks' => $this->context,
             ], JSON_UNESCAPED_UNICODE);
         } elseif ($this->layout) {
             // Return a template part with layout.
-            return $this->template($this->layout, ['content' => $content]);
+            return $this->include($this->layout, ['content' => $content]);
         }
 
         // Returns only template part.
@@ -138,7 +138,7 @@ class template
      * @param array $context Optional additional context to merge with the existing context.
      * @return string The rendered template content.
      */
-    public function template(string $template, array $context = []): string
+    public function include(string $template, array $context = []): string
     {
         // Create a template location path with template root dir.
         $templatePath = $this->path . '/templates/' . str_replace('.php', '', $template) . '.php';
@@ -147,6 +147,9 @@ class template
         // Extract and pass variables from array.
         $context = array_merge($this->context, $context);
         extract($context);
+
+        // Set current object to be used in template.
+        $template = $this;
 
         // Include template part and return as string.
         ob_start();
