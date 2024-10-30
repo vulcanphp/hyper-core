@@ -31,14 +31,15 @@ class vite
 
         // Set default parameneters into vite configuration.
         $this->config = array_merge([
-            'scheme'    => 'http://',
-            'host'      => 'localhost',
-            'port'      => 5133,
-            'running'   => null,
-            'entry'     => 'app.js',
-            'root'      => 'public/resources',
-            'dist'      => 'public/resources/build',
-            'manifest'  => null,
+            'scheme' => 'http://',
+            'host' => 'localhost',
+            'port' => 5133,
+            'running' => null,
+            'entry' => 'app.js',
+            'root' => 'resources',
+            'dist' => 'build',
+            'dist_path' => 'public/resources/',
+            'manifest' => null,
         ], $config);
     }
 
@@ -116,7 +117,7 @@ class vite
 
         return array_reduce(
             $this->importsUrls($entry),
-            fn ($res, $url) => $res . '<link rel="modulepreload" href="' . $url . '">',
+            fn($res, $url) => $res . '<link rel="modulepreload" href="' . $url . '">',
             ''
         );
     }
@@ -135,7 +136,7 @@ class vite
 
         return array_reduce(
             $this->cssUrls($entry),
-            fn ($tags, $url) => $tags . '<link rel="stylesheet" href="' . $url . '">',
+            fn($tags, $url) => $tags . '<link rel="stylesheet" href="' . $url . '">',
             ''
         );
     }
@@ -147,7 +148,7 @@ class vite
      */
     public function getManifest(): array
     {
-        $manifestPath = root_dir($this->config('dist') . '/manifest.json');
+        $manifestPath = root_dir($this->config('dist_path') . $this->config('dist') . '/manifest.json');
         return $this->config['manifest'] ??=
             file_exists($manifestPath) ? (array) json_decode(file_get_contents($manifestPath), true) : [];
     }
@@ -230,6 +231,6 @@ class vite
      */
     private function distUrl(string $path = ''): string
     {
-        return url($this->config('dist') . '/' . ltrim($path));
+        return asset_url($this->config('dist') . '/' . ltrim($path));
     }
 }

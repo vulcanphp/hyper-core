@@ -136,7 +136,7 @@ class router
 
                 // Handle template rendering or instantiate a class for callback if specified
                 if (isset($route['template'])) {
-                    $route['callback'] = fn () => template($route['template']);
+                    $route['callback'] = fn() => template($route['template']);
                 } elseif (is_array($route['callback']) && is_string($route['callback'][0])) {
                     $route['callback'][0] = new $route['callback'][0];
                 }
@@ -166,7 +166,7 @@ class router
     private function match($routeMethod, $routePath, request $request): bool
     {
         // Check if the request method is allowed for this route
-        if (!in_array($request->method, (array)$routeMethod)) {
+        if (!in_array($request->method, (array) $routeMethod)) {
             return false;
         }
 
@@ -182,7 +182,7 @@ class router
             // Map matched segments to parameter names in the route path
             if (preg_match_all('/\{([^\}]+)\}/', $routePath, $names)) {
                 if (count($names[1]) === count($matches)) {
-                    $matches = array_combine(array_map(fn ($name) => str_replace('?', '', $name), $names[1]), $matches,);
+                    $matches = array_combine(array_map(fn($name) => str_replace('?', '', $name), $names[1]), $matches, );
                 }
             }
 
