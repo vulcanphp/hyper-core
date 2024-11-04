@@ -212,11 +212,11 @@ function request_url(): string
  * application's router.
  *
  * @param string $name The name of the route to generate a URL for.
- * @param string|null $context Optional context to include in the route.
+ * @param null|string|array $context Optional context to include in the route.
  *
  * @return string The generated URL for the specified route.
  */
-function route_url(string $name, ?string $context = null): string
+function route_url(string $name, null|string|array $context = null): string
 {
     return url(application::$app->router->route($name, $context));
 }
@@ -402,9 +402,6 @@ function collect(array $items = []): collect
 {
     return collect::make($items);
 }
-
-// Holed the cache instances which are made by app.
-$caches = [];
 
 /**
  * Retrieve or create a cache instance by name.

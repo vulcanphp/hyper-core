@@ -18,8 +18,8 @@ class hash
      */
     protected const ENCRYPT_ALGO = [
         'Blowfish' => ['2a', 7],
-        'SHA-256'  => [5, 'rounds=5000'],
-        'SHA-512'  => [6, 'rounds=5000'],
+        'SHA-256' => [5, 'rounds=5000'],
+        'SHA-512' => [6, 'rounds=5000'],
     ];
 
     /**
@@ -69,9 +69,9 @@ class hash
      */
     public static function encrypt(string $value): string
     {
-        $key        = bin2hex(random_bytes(4));  // Random key for encryption
-        $ivLen      = openssl_cipher_iv_length('AES-256-CBC');  // IV length for AES-256-CBC
-        $iv         = random_bytes($ivLen);  // Random initialization vector
+        $key = bin2hex(random_bytes(4));  // Random key for encryption
+        $ivLen = openssl_cipher_iv_length('AES-256-CBC');  // IV length for AES-256-CBC
+        $iv = random_bytes($ivLen);  // Random initialization vector
         $cipherText = openssl_encrypt($value, 'AES-256-CBC', $key, 0, $iv);  // Encrypt value
 
         // Concatenate encrypted data, IV, and key, then encode in base64

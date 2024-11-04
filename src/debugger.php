@@ -207,7 +207,7 @@ class debugger
      */
     private function formatArgs(array $args): string
     {
-        return implode(', ', array_map(fn ($arg) => is_object($arg) ? get_class($arg) : gettype($arg), $args));
+        return implode(', ', array_map(fn($arg) => is_object($arg) ? get_class($arg) : gettype($arg), $args));
     }
 
     /**

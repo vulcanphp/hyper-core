@@ -59,7 +59,7 @@ trait uploader
     {
         $saved = null;
         $oldFiles = explode(',', application::$app->request->post('_' . $name, ''));
-        if (isset($files) && (((array)$files['size'] ?? [])[0] ?? 0) > 0) {
+        if (isset($files) && (((array) $files['size'] ?? [])[0] ?? 0) > 0) {
             $uploader = new utilsUploader(...$upload);
             $saved = $this->clearSavedPath($uploader->upload($files), env('upload_dir'));
             $this->removeFiles($oldFiles);

@@ -89,11 +89,11 @@ class query
 
                 // create or replace data into database 
                 isset($config['replace']) && $config['replace'] === true ?
-                    'REPLACE' : 'INSERT',
+                'REPLACE' : 'INSERT',
 
                 // use ignore when failed
                 isset($config['ignore']) && $config['ignore'] === true ?
-                    ($this->database->config['driver'] === 'sqlite' ? 'OR IGNORE' : 'IGNORE') : '',
+                ($this->database->config['driver'] === 'sqlite' ? 'OR IGNORE' : 'IGNORE') : '',
 
                 // join all the database table field using "," comma.
                 join(',', $fields),
@@ -103,26 +103,26 @@ class query
 
                 // bulk update database records on conflict.
                 isset($config['update']) && !empty($config['update']) ?
-                    ($this->database->config['driver'] === 'sqlite' ?
+                ($this->database->config['driver'] === 'sqlite' ?
                         // bulk update records when pdo driver is sqlite.
-                        ('ON CONFLICT(' . join(',', ($config['conflict'] ?? ['id'])) . ') DO UPDATE SET ' . (join(
-                            ', ',
-                            array_map(
-                                fn ($key, $value) => sprintf('%s = excluded.%s', $key, $value),
-                                array_keys($config['update']),
-                                array_values($config['update'])
-                            )
-                        )))
-                        // bulk update records when pdo driver is mysql.
-                        : ('ON DUPLICATE KEY UPDATE ' . (join(
-                            ', ',
-                            array_map(
-                                fn ($key, $value) => sprintf('%s = VALUES(%s)', $key, $value),
-                                array_keys($config['update']),
-                                array_values($config['update'])
-                            )
-                        )))
-                    ) : ''
+                    ('ON CONFLICT(' . join(',', ($config['conflict'] ?? ['id'])) . ') DO UPDATE SET ' . (join(
+                        ', ',
+                        array_map(
+                            fn($key, $value) => sprintf('%s = excluded.%s', $key, $value),
+                            array_keys($config['update']),
+                            array_values($config['update'])
+                        )
+                    )))
+                    // bulk update records when pdo driver is mysql.
+                    : ('ON DUPLICATE KEY UPDATE ' . (join(
+                        ', ',
+                        array_map(
+                            fn($key, $value) => sprintf('%s = VALUES(%s)', $key, $value),
+                            array_keys($config['update']),
+                            array_values($config['update'])
+                        )
+                    )))
+                ) : ''
             )
         );
 
@@ -132,7 +132,7 @@ class query
                 $statement->bindValue(
                     sprintf(':%s_%s', $column, $serial),
                     isset($row[$column]) && is_array($row[$column]) ?
-                        ($row[$column]['text'] ?? null) : ($row[$column] ?? null)
+                    ($row[$column]['text'] ?? null) : ($row[$column] ?? null)
                 );
             }
         }
@@ -168,11 +168,11 @@ class query
             // Extract all fields except those are in $config['conflict'].
             $fields = array_filter(
                 array_keys($data[0]),
-                fn ($field) => !in_array($field, $config['conflict'])
+                fn($field) => !in_array($field, $config['conflict'])
             );
 
             // Add extracted fields to be updated on conflict.
-            $config['update'] = array_merge(...array_map(fn ($field) => [$field => $field], $fields));
+            $config['update'] = array_merge(...array_map(fn($field) => [$field => $field], $fields));
         }
 
         // Returns to base insert method. integer on success else, 0 on fails. 
@@ -238,7 +238,7 @@ class query
         $statement = $this->database->prepare(
             sprintf(
                 "UPDATE `{$this->table}` SET %s %s",
-                implode(', ', array_map(fn ($attr) => "$attr=:$attr", array_keys($data))),
+                implode(', ', array_map(fn($attr) => "$attr=:$attr", array_keys($data))),
                 $this->getWhereSql()
             )
         );
@@ -585,10 +585,10 @@ class query
         // Create sql command to count rows.
         $statement = $this->database->prepare(
             "SELECT COUNT(1) FROM {$this->table} AS p "
-                . (!empty($this->query['joins']) ? $this->query['joins'] : '')
-                . $this->getWhereSql()
-                . (isset($this->query['group']) ? ' GROUP BY ' . trim($this->query['group']) : '')
-                . (isset($this->query['having']) ? ' HAVING ' . trim($this->query['having']) : '')
+            . (!empty($this->query['joins']) ? $this->query['joins'] : '')
+            . $this->getWhereSql()
+            . (isset($this->query['group']) ? ' GROUP BY ' . trim($this->query['group']) : '')
+            . (isset($this->query['having']) ? ' HAVING ' . trim($this->query['having']) : '')
         );
 
         // Apply where statement if exists.
@@ -661,20 +661,20 @@ class query
 
             // Create dynamic placeholder, depands on parameters.
             $params = array_map(
-                fn ($attr, $value) => sprintf(
+                fn($attr, $value) => sprintf(
                     '%s:%s_%s%s',
 
                     // create placeholder from array value ex: ['prefix' => 'DATE('].
-                    is_array($value) && isset($value['prefix']) ?
-                        $value['prefix'] : '',
+                    is_array($value) && isset ($value['prefix']) ?
+                    $value['prefix'] : '',
 
                     // Placeholder main part.
                     $attr,
                     $serial,
 
                     // create placeholder from array value ex: ['suffix' => ')'].
-                    is_array($value) && isset($value['suffix']) ?
-                        $value['suffix'] : ''
+                    is_array($value) && isset ($value['suffix']) ?
+                    $value['suffix'] : ''
                 ),
                 array_keys($row),
                 array_values($row)
@@ -703,12 +703,12 @@ class query
         // Build complete select command with condition, order, and limit.
         $statement = $this->database->prepare(
             $this->query['sql']
-                . $this->query['joins']
-                . $this->getWhereSql()
-                . (isset($this->query['group']) ? ' GROUP BY ' . trim($this->query['group']) : '')
-                . (isset($this->query['having']) ? ' HAVING ' . trim($this->query['having']) : '')
-                . (isset($this->query['order']) ? ' ORDER BY ' . trim($this->query['order']) : '')
-                . (isset($this->query['limit']) ? ' LIMIT ' . trim($this->query['limit']) : '')
+            . $this->query['joins']
+            . $this->getWhereSql()
+            . (isset($this->query['group']) ? ' GROUP BY ' . trim($this->query['group']) : '')
+            . (isset($this->query['having']) ? ' HAVING ' . trim($this->query['having']) : '')
+            . (isset($this->query['order']) ? ' ORDER BY ' . trim($this->query['order']) : '')
+            . (isset($this->query['limit']) ? ' LIMIT ' . trim($this->query['limit']) : '')
         );
 
         // Bind/Add conditions to filter records.
@@ -741,11 +741,11 @@ class query
                 implode(
                     " {$method} ",
                     array_map(
-                        fn ($attr, $value) => $attr . (is_array($value) ?
+                        fn($attr, $value) => $attr . (is_array($value) ?
                             // Create a where clouse to match IN(), Ex: "id IN(:id_0, :id_1, :id_2, :id_3)" .
                             sprintf(
                                 " IN (%s)",
-                                join(",", array_map(fn ($index) => ':' . str_replace('.', '', $attr) . '_' . $index, array_keys($value)))
+                                join(",", array_map(fn($index) => ':' . str_replace('.', '', $attr) . '_' . $index, array_keys($value)))
                             )
                             // Create a where close to match is equal, Ex. "id = :id_0"
                             : " = :" . str_replace('.', '', $attr)
@@ -789,7 +789,7 @@ class query
     protected function getWhereSql(): string
     {
         // Returns the SQL string for the WHERE clause.
-        return $this->hasWhere() ? ' WHERE ' .  trim($this->where['sql']) . ' ' : '';
+        return $this->hasWhere() ? ' WHERE ' . trim($this->where['sql']) . ' ' : '';
     }
 
     /**

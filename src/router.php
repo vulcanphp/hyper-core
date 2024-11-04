@@ -91,7 +91,7 @@ class router
      * 
      * @throws Exception if the route does not exist.
      */
-    public function route(string $name, ?string $context = null): string
+    public function route(string $name, null|string|array $context = null): string
     {
         // Retrieve the route path by name or throw an exception
         $route = $this->routes[$name]['path'] ?? null;
@@ -101,7 +101,13 @@ class router
 
         // Replace dynamic parameters in route path with context, if provided
         if ($context !== null) {
-            $route = preg_replace('/\{[a-zA-Z]+\}/', $context, $route);
+            if (is_array($context)) {
+                foreach ($context as $key => $value) {
+                    $route = preg_replace('/\{' . $key . '\}/', $value, $route);
+                }
+            } else {
+                $route = preg_replace('/\{[a-zA-Z]+\}/', $context, $route);
+            }
         }
 
         return $route;

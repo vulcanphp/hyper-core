@@ -138,7 +138,7 @@ class database
             // create a sqlite data source name, sqlite.db filepath.
             'sqlite' => sprintf('sqlite:%s', $this->config['file']),
 
-                /** create a serveer side data source name.
+            /** create a serveer side data source name.
              * 
              * supported drivers: mysql, pgsql, cubrid, dblib, firebird, ibm, informix, sqlsrv, oci, odbc
              * @see https://www.php.net/manual/en/pdo.drivers.php
@@ -147,13 +147,13 @@ class database
                 "%s:%s%s%s%s",
                 $this->config['driver'],
                 isset($this->config['host']) ?
-                    sprintf('host=%s;', $this->config['host']) : '',
+                sprintf('host=%s;', $this->config['host']) : '',
                 isset($this->config['port']) ?
-                    sprintf('port=%s;', $this->config['port']) : '',
+                sprintf('port=%s;', $this->config['port']) : '',
                 isset($this->config['name']) ?
-                    sprintf('dbname=%s;', $this->config['name']) : '',
+                sprintf('dbname=%s;', $this->config['name']) : '',
                 isset($this->config['charset']) ?
-                    sprintf('charset=%s;', $this->config['charset']) : '',
+                sprintf('charset=%s;', $this->config['charset']) : '',
             ),
         };
     }

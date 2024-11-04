@@ -159,10 +159,10 @@ class translator
      */
     private function translateFromGoogle(array $texts): array
     {
-        $separator  = '(##)';
-        $replace    = ['( # # )', '( ## )', '( ##)', '(## )'];
-        $texts      = array_filter(array_map(fn ($text) => trim($text), $texts));
-        $translate  = join("\n$separator", $texts);
+        $separator = '(##)';
+        $replace = ['( # # )', '( ## )', '( ##)', '(## )'];
+        $texts = array_filter(array_map(fn($text) => trim($text), $texts));
+        $translate = join("\n$separator", $texts);
         $translated = [];
 
         debugger('app', "translating texts from google: {$translate}");
@@ -205,7 +205,7 @@ class translator
         // Extract multiple texts with {$separator} from single string.
         $translated = array_filter(
             array_map(
-                fn ($sentence) => trim(str_replace("\n", '', $sentence)),
+                fn($sentence) => trim(str_replace("\n", '', $sentence)),
                 explode($separator, str_replace($replace, $separator, join('', $translated)))
             )
         );

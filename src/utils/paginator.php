@@ -56,9 +56,9 @@ class paginator
      */
     public function resetPaginator(): self
     {
-        $this->pages  = (int)ceil($this->getTotal() / $this->getLimit());
-        $this->page   = min($this->getPages(), $this->getKeywordValue());
-        $this->offset = (int)ceil($this->getLimit() * ($this->getPage() - 1));
+        $this->pages = (int) ceil($this->getTotal() / $this->getLimit());
+        $this->page = min($this->getPages(), $this->getKeywordValue());
+        $this->offset = (int) ceil($this->getLimit() * ($this->getPage() - 1));
 
         return $this;
     }

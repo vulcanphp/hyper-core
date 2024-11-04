@@ -63,7 +63,7 @@ trait form
             } elseif (in_array('bool', $field['type'])) {
                 $type = 'checkbox';
             } elseif ($uploads->pluck('name')->in($name)) {
-                $upload = $uploads->find(fn ($upload) => $upload['name'] == $name);
+                $upload = $uploads->find(fn($upload) => $upload['name'] == $name);
                 $type = 'file';
                 $multiple = isset($upload['multiple']) && $upload['multiple'];
             }
@@ -108,7 +108,7 @@ trait form
             if ($property->hasType()) {
                 $type = $property->getType();
                 if ($type instanceof ReflectionUnionType) {
-                    $type = array_map(fn ($t) => $t->getName(), $type->getTypes());
+                    $type = array_map(fn($t) => $t->getName(), $type->getTypes());
                 } elseif ($type instanceof ReflectionNamedType) {
                     $type = [$type->getName(), ($type->allowsNull() ? 'null' : 'notNull')];
                 } else {

@@ -40,19 +40,20 @@ trait orm
      * Allows for eager loading of related ORM data by specifying the relationships to load.
      * 
      * @param array|string $orm The relationships to load, or '*' to load all configured relationships.
+     * @param array $data The data to use for loading the initial model instance.
      * @return query The query object with attached mappers for handling the related data.
      * 
      * @throws RuntimeException If the specified relationship is not defined in the ORM configuration.
      */
-    public static function with(array|string $orm = '*'): query
+    public static function with(array|string $orm = '*', array $data = []): query
     {
-        $model = new static();
+        $model = static::load($data);
         $query = $model->get();
         $registeredOrm = $model->orm();
         if ($orm === '*') {
             $orm = array_keys($registeredOrm);
         }
-        foreach ((array)$orm as $with) {
+        foreach ((array) $orm as $with) {
             $config = $registeredOrm[$with] ?? false;
             if (!$config) {
                 throw new RuntimeException("Orm({$with}) does not specified in: " . $model::class);
@@ -136,17 +137,22 @@ trait orm
     private function __manyX(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
-        return $this->__parseOrmData(
-            $data,
+
+        $query = $this->applyCallback(
             $object->query()
                 ->fetch(PDO::FETCH_ASSOC)
                 ->select("p.*, t1.{$data[0]->table()}_id, t1.{$object->table()}_id")
                 ->join($config['table'], "t1.{$object->table()}_id = p.id")
-                ->where(["t1.{$data[0]->table()}_id" => collect($data)->pluck('id')->unique()->all()])
-                ->result(),
-            $object,
-            $with
+                ->where([
+                    "t1.{$data[0]->table()}_id" => collect($data)
+                        ->pluck('id')
+                        ->unique()
+                        ->all()
+                ]),
+            $config
         );
+
+        return $this->__parseOrmData($data, $query->result(), $object, $with);
     }
 
     /**
@@ -160,13 +166,23 @@ trait orm
     private function __many(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
-        return $this->__parseOrmData(
-            $data,
+
+        $query = $this->applyCallback(
             $object->query()
                 ->select()
                 ->fetch(PDO::FETCH_ASSOC)
-                ->where(["{$data[0]->table()}_id" => collect($data)->pluck('id')->unique()->all()])
-                ->result(),
+                ->where([
+                    "{$data[0]->table()}_id" => collect($data)
+                        ->pluck('id')
+                        ->unique()
+                        ->all()
+                ]),
+            $config
+        );
+
+        return $this->__parseOrmData(
+            $data,
+            $query->result(),
             $object,
             $with
         );
@@ -207,11 +223,21 @@ trait orm
     private function __one(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
-        $objects = $object->query()
-            ->select()
-            ->fetch(PDO::FETCH_ASSOC)
-            ->where(['id' => collect($data)->pluck("{$object->table()}_id")->unique()->all()])
+
+        $objects = $this->applyCallback(
+            $object->query()
+                ->select()
+                ->fetch(PDO::FETCH_ASSOC)
+                ->where([
+                    'id' => collect($data)
+                        ->pluck("{$object->table()}_id")
+                        ->unique()
+                        ->all()
+                ]),
+            $config
+        )
             ->result();
+
         foreach ($data as $d) {
             if (!isset($d->orm[$with])) {
                 $d->orm[$with] = false;
@@ -224,6 +250,23 @@ trait orm
             }
         }
         return $data;
+    }
+
+    /**
+     * Applies a callback to a query object, if provided in the configuration.
+     * The callback should accept a query object as its first argument.
+     * 
+     * @param query $query The query object.
+     * @param array $config The ORM relationship configuration.
+     * @return query The modified query object.
+     */
+    private function applyCallback(query $query, array $config): query
+    {
+        if (isset($config['callback']) && is_callable($config['callback'])) {
+            $query = call_user_func($config['callback'], $query);
+        }
+
+        return $query;
     }
 
     /**
@@ -243,7 +286,7 @@ trait orm
                 'type' => 'select',
                 'required' => true,
                 'label' => ucfirst(str_replace(['_', '-'], ' ', $with)),
-                'options' => collect($model->get()->result())->mapK(fn ($d) => [$d->id => (string) $d])->all(),
+                'options' => collect($model->get()->result())->mapK(fn($d) => [$d->id => (string) $d])->all(),
             ];
             if ($config['has'] == 'one') {
                 $fields[] = array_merge($field, [
@@ -288,7 +331,7 @@ trait orm
             $model = new $config['model'];
             $query = new query(application::$app->database, $config['table']);
             if (!empty($create_ids)) {
-                $ids = collect($create_ids)->map(fn ($id) => [
+                $ids = collect($create_ids)->map(fn($id) => [
                     "{$model->table()}_id" => $id,
                     "{$this->table()}_id" => $this->id,
                 ])->all();

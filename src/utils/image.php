@@ -41,8 +41,16 @@ class image
 
         // The extensions are required for this image object.
         $requiredFunctions = [
-            'getimagesize', 'imagecreatefromjpeg', 'imagecreatefrompng', 'imagejpeg',
-            'imagecreatetruecolor', 'imagecopyresampled', 'imagecreatefromgif', 'imagepng', 'imagegif', 'imagerotate'
+            'getimagesize',
+            'imagecreatefromjpeg',
+            'imagecreatefrompng',
+            'imagejpeg',
+            'imagecreatetruecolor',
+            'imagecopyresampled',
+            'imagecreatefromgif',
+            'imagepng',
+            'imagegif',
+            'imagerotate'
         ];
 
         // Check if all extensions are enabled in this system.

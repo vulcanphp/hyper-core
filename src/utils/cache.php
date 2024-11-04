@@ -151,7 +151,7 @@ class cache
         $results = [];
 
         // Retrieve the cached entries.
-        foreach ((array)$keys as $key) {
+        foreach ((array) $keys as $key) {
             if ($this->has($key)) {
                 $results[$key] = unserialize($this->cacheData[$key]['data']);
             }
@@ -174,7 +174,7 @@ class cache
         }
 
         // An array of all cached data.
-        return array_map(fn ($entry) => unserialize($entry['data']), $this->cacheData);
+        return array_map(fn($entry) => unserialize($entry['data']), $this->cacheData);
     }
 
     /**
@@ -187,7 +187,7 @@ class cache
     {
         $this->reload();
 
-        foreach ((array)$keys as $key) {
+        foreach ((array) $keys as $key) {
             unset($this->cacheData[$key]);
         }
 
@@ -262,11 +262,13 @@ class cache
             }
 
             // Save updated cache data into locoal filesystem.
-            if (file_put_contents(
-                $this->cachePath,
-                json_encode($this->cacheData, JSON_UNESCAPED_UNICODE),
-                LOCK_EX
-            )) {
+            if (
+                file_put_contents(
+                    $this->cachePath,
+                    json_encode($this->cacheData, JSON_UNESCAPED_UNICODE),
+                    LOCK_EX
+                )
+            ) {
                 debugger('cache', "Cache saved ({$this->name}) to: {$this->cachePath}");
             } else {
                 debugger('cache', "Failed to save cache ({$this->name}) to: {$this->cachePath}");

@@ -22,9 +22,9 @@ class ping
      * @var array $config
      */
     protected array $config = [
-        'headers'   => [],
-        'options'   => [],
-        'download'  => null,
+        'headers' => [],
+        'options' => [],
+        'download' => null,
         'useragent' => null,
     ];
 
@@ -47,14 +47,14 @@ class ping
         $defaultOptions = [
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 60,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 60,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_ENCODING       => 'utf-8',
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_HTTPHEADER     => $this->config['headers'],
-            CURLOPT_URL            => $url . (!empty($params) ? '?' . http_build_query($params) : '')
+            CURLOPT_ENCODING => 'utf-8',
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_HTTPHEADER => $this->config['headers'],
+            CURLOPT_URL => $url . (!empty($params) ? '?' . http_build_query($params) : '')
         ];
 
         // Add custom user agent if set
@@ -73,10 +73,10 @@ class ping
 
         // Execute the cURL request and gather response data
         $response = [
-            'body'     => curl_exec($curl),
-            'status'   => curl_getinfo($curl, CURLINFO_HTTP_CODE),
+            'body' => curl_exec($curl),
+            'status' => curl_getinfo($curl, CURLINFO_HTTP_CODE),
             'last_url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
-            'length'   => curl_getinfo($curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD),
+            'length' => curl_getinfo($curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD),
         ];
 
         // Close file if download was specified
@@ -99,9 +99,9 @@ class ping
     public function resetConfig(): void
     {
         $this->config = [
-            'headers'   => [],
-            'options'   => [],
-            'download'  => null,
+            'headers' => [],
+            'options' => [],
+            'download' => null,
             'useragent' => null,
         ];
     }
@@ -177,7 +177,7 @@ class ping
     public function postFields(mixed $fields): self
     {
         return $this->options([
-            CURLOPT_POST       => 1,
+            CURLOPT_POST => 1,
             CURLOPT_POSTFIELDS => is_array($fields) ? json_encode($fields) : $fields
         ]);
     }
