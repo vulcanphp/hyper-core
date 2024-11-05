@@ -214,6 +214,7 @@ class request
      */
     public function server(string $key, $default = null): ?string
     {
+        $key = str_replace('-', '_', strtoupper($key));
         return $this->serverParams[$key] ?? $default;
     }
 
@@ -226,7 +227,7 @@ class request
      */
     public function header(string $name, $defaultValue = null): ?string
     {
-        $name = 'HTTP_' . str_replace('-', '_', strtoupper($name));
+        $name = 'HTTP_' . $name;
         return $this->server($name, $defaultValue);
     }
 
@@ -256,10 +257,19 @@ class request
         } elseif (!empty($this->header('x-forwarded-for'))) {
             $ips = explode(',', $this->header('x-forwarded-for'));
             $ip = trim(end($ips));
+        } elseif (!empty($this->header('x-forwarded'))) {
+            $ips = explode(',', $this->header('x-forwarded'));
+            $ip = trim(end($ips));
+        } elseif (!empty($this->header('forwarded'))) {
+            $ips = explode(',', $this->header('forwarded'));
+            $ip = trim(end($ips));
+        } elseif (!empty($this->header('forwarded-for'))) {
+            $ips = explode(',', $this->header('forwarded-for'));
+            $ip = trim(end($ips));
         } elseif (!empty($this->header('cf-connecting-ip'))) {
             $ip = $this->header('cf-connecting-ip');
-        } elseif (!empty($this->header('remote-addr'))) {
-            $ip = $this->header('remote-addr');
+        } elseif (!empty($this->server('remote-addr'))) {
+            $ip = $this->server('remote-addr');
         }
 
         // Return a valid ip address of client, else return as false.
