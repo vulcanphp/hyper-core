@@ -35,6 +35,7 @@ class vite
             'host' => 'localhost',
             'port' => 5133,
             'running' => null,
+            'reactRefresh' => false,
             'entry' => 'app.js',
             'root' => 'resources',
             'dist' => 'build',
@@ -62,9 +63,35 @@ class vite
      */
     public function __toString(): string
     {
-        return $this->jsTag($this->config('entry'))
+        return $this->reactRefreshTag($this->config('entry'))
+            . $this->jsTag($this->config('entry'))
             . $this->jsPreloadImports($this->config('entry'))
             . $this->cssTag($this->config('entry'));
+    }
+
+
+    /**
+     * Generates a script tag to inject React Refresh runtime.
+     *
+     * @param string $entry The entry file name.
+     * @return string The HTML script tag for React Refresh runtime.
+     */
+    public function reactRefreshTag(string $entry): string
+    {
+        $tag = '';
+        if ($this->config('reactRefresh') && $this->isRunning($entry)) {
+            $tag = <<<HTML
+                <script type="module">
+                    import RefreshRuntime from "{$this->serverUrl('@react-refresh')}";
+                    RefreshRuntime.injectIntoGlobalHook(window);
+                    window.\$RefreshReg$ = () => { };
+                    window.\$RefreshSig$ = () => (type) => type;
+                    window.__vite_plugin_react_preamble_installed__ = true;
+                </script>
+            HTML;
+        }
+
+        return $tag;
     }
 
     /**
