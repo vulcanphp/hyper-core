@@ -32,10 +32,6 @@ Core Classes and Functionalities for Hyper MVT Framework
     dump($database->prepare('SELECT * FROM students'));
     ```
 
-### Debugger
-- **Class:** `debugger`
-- **Description:** Error tracer and log viewer for debugging and logging application errors.
-
 ### Request
 - **Class:** `request`
 - **Description:** HTTP request class for handling and processing incoming requests.
@@ -107,13 +103,13 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Example:**
     ```php
     use hyper\template;
-    $engine = new template(__DIR__);
-    dump($engine->render('welcome', ['message' => 'Welcome to App']));
+    $template = new template(__DIR__);
+    dump($template->render('welcome', ['message' => 'Welcome to App']));
     ```
 
 ### Translator
 - **Class:** `translator`
-- **Description:** Google Translator class for translating text.
+- **Description:** Translator helper class to retrieve translated text.
 
 ## Utility Classes
 
@@ -129,7 +125,7 @@ Core Classes and Functionalities for Hyper MVT Framework
 
 ### Collect
 - **Class:** `collect`
-- **Description:** Collection class for handling data collections.
+- **Description:** Collection class for handling arrays.
 
 ### Form
 - **Class:** `form`
@@ -249,7 +245,7 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     use hyper\helpers\mail;
     $mail = new mail();
-    $mail->from('shahin.moyshan2@gmail.com', 'Shahin Moyshan');
+    $mail->address('john.doe@main.com', 'John Doe');
     $mail->replyTo('shahin.moyshan2@gmail.com');
     $mail->subject('Test Mail');
     $mail->body('Hello World, This is Test Mail From Shahin Moyshan');
@@ -269,7 +265,7 @@ Core Classes and Functionalities for Hyper MVT Framework
 
         protected function orm(): array {
             return [
-                'department' => ['has' => 'one', 'model' => department::class],
+                'department' => ['has' => 'one', 'model' => department::class, 'lazy' => false],
                 'subjects' => ['has' => 'many-x', 'model' => subject::class, 'table' => 'students_subjects'],
                 'results' => ['has' => 'many', 'model' => result::class, 'formIgnore' => true],
             ];
@@ -310,9 +306,9 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Class:** `vite`
 - **Description:** Vite helper class for asset management.
 
-### Drawer
-- **Class:** `drawer`
-- **Description:** A utility to manage array data.
+### Settings
+- **Class:** `settings`
+- **Description:** A utility to manage settings data.
 
 ## Shortcut Functions
 
@@ -375,11 +371,10 @@ Core Classes and Functionalities for Hyper MVT Framework
 - **Functions:**
   - `dump()` - Dumps data for inspection.
   - `dd()` - Dumps data and stops execution.
-  - `debugger()` - Shows any error details and logs application steps.
 
 ### Environment
 - **Function:** `env()`
-- **Description:** Gets an environment variable.
+- **Description:** Gets application environment variable data.
 
 ### CSRF
 - **Functions:**
@@ -414,4 +409,4 @@ Core Classes and Functionalities for Hyper MVT Framework
 
 ## Conclusion
 
-HyperCore provides a comprehensive set of core functionalities, utility methods, and helper classes to make web development with the Hyper MVT Framework efficient and enjoyable. Whether you are handling HTTP requests, managing databases, or working with templates, HyperCore has you covered.
+HyperCore provides a set of core functionalities, utility methods, and helper classes to make web development with the Hyper MVT Framework efficient and enjoyable. Whether you are handling HTTP requests, managing databases, or working with templates, HyperCore has you covered.

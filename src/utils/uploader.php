@@ -21,7 +21,7 @@ class uploader
      * @param string $uploadDir Directory where files will be uploaded.
      * @param array $extensions Allowed file extensions (e.g., ['jpg', 'png']).
      * @param bool $multiple Whether multiple file uploads are allowed.
-     * @param int $maxSize Maximum allowed file size in bytes. Default is 1MB (1048576 bytes).
+     * @param int $maxSize Maximum allowed file size in bytes. Default is 2MB (2097152 bytes).
      * @param array|null $resize Optional dimensions to resize the image, e.g., ['width' => 100, 'height' => 100].
      * @param array|null $resizes Optional multiple resize dimensions, e.g., [['width' => 100, 'height' => 100], ...].
      * @param int|null $compress Optional image compression level (1-100).
@@ -32,7 +32,7 @@ class uploader
         public string $uploadDir,
         public array $extensions = [],
         public bool $multiple = false,
-        public int $maxSize = 1048576,
+        public int $maxSize = 2097152,
         public ?array $resize = null,
         public ?array $resizes = null,
         public ?int $compress = null,

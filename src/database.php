@@ -54,7 +54,6 @@ class database
      */
     public function query(string $statement, ...$args): PDOStatement|false
     {
-        debugger('query', $statement);
         return $this->getPdo()->query($statement, ...$args);
     }
 
@@ -67,7 +66,6 @@ class database
      */
     public function prepare(string $statement, array $options = []): PDOStatement|false
     {
-        debugger('query', $statement);
         return $this->getPdo()->prepare($statement, $options);
     }
 
@@ -80,7 +78,6 @@ class database
      */
     public function __call(string $name, array $args)
     {
-        debugger('query', $args);
         return call_user_func_array([$this->getPdo(), $name], $args);
     }
 
@@ -123,7 +120,6 @@ class database
             $this->pdo->exec('PRAGMA foreign_keys = ON;');
         }
 
-        debugger('app', "Database initialized for: {$dsn}");
         return $this;
     }
 
@@ -138,7 +134,7 @@ class database
             // create a sqlite data source name, sqlite.db filepath.
             'sqlite' => sprintf('sqlite:%s', $this->config['file']),
 
-            /** create a serveer side data source name.
+            /** create a server side data source name.
              * 
              * supported drivers: mysql, pgsql, cubrid, dblib, firebird, ibm, informix, sqlsrv, oci, odbc
              * @see https://www.php.net/manual/en/pdo.drivers.php

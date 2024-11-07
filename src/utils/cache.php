@@ -55,8 +55,6 @@ class cache
             $this->cacheData = file_exists($this->cachePath)
                 ? json_decode(file_get_contents($this->cachePath), true)
                 : [];
-
-            debugger('cache', "Cache loaded ({$this->name}) from: {$this->cachePath}");
         }
 
         return $this;
@@ -93,7 +91,7 @@ class cache
      */
     public function store(string $key, mixed $data, ?string $expire = null): self
     {
-        // Relace cache data if not loaded.
+        // Reload cache data if not loaded.
         $this->reload();
 
         // Push new entry into cacheData.
@@ -228,7 +226,6 @@ class cache
         $this->cacheData = [];
         $this->changed = true;
 
-        debugger('cache', "Cache flushed ({$this->name}) from: {$this->cachePath}");
         return $this;
     }
 
@@ -251,28 +248,22 @@ class cache
     public function __destruct()
     {
         if ($this->changed) {
-            // Set a temp direcotry to store caches. 
+            // Set a temp directory to store caches. 
             $cacheDir = env('tmp_dir');
 
-            // Check if cache direcoty exists, else create a new direcotry.
+            // Check if cache directory exists, else create a new direcotry.
             if (!is_dir($cacheDir) && !mkdir($cacheDir, 0777, true)) {
-                throw new RuntimeException("Failed to create temp direcotry to sotre caches.");
+                throw new RuntimeException("Failed to create temp directory to store caches.");
             } elseif (!is_writable($cacheDir) && !chmod($cacheDir, 0777)) {
-                throw new RuntimeException("Temp direcotry is not writable.");
+                throw new RuntimeException("Temp directory is not writable.");
             }
 
-            // Save updated cache data into locoal filesystem.
-            if (
-                file_put_contents(
-                    $this->cachePath,
-                    json_encode($this->cacheData, JSON_UNESCAPED_UNICODE),
-                    LOCK_EX
-                )
-            ) {
-                debugger('cache', "Cache saved ({$this->name}) to: {$this->cachePath}");
-            } else {
-                debugger('cache', "Failed to save cache ({$this->name}) to: {$this->cachePath}");
-            }
+            // Save updated cache data into local filesystem.
+            file_put_contents(
+                $this->cachePath,
+                json_encode($this->cacheData, JSON_UNESCAPED_UNICODE),
+                LOCK_EX
+            );
         }
     }
 }

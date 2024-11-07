@@ -2,8 +2,10 @@
 
 namespace hyper\utils;
 
+use RuntimeException;
+
 /**
- * Class drawer
+ * Class settings
  * 
  * A utility class to manage multi-dimensional associative array data, often used for storing settings.
  * Data can be set, retrieved, and removed, and the class serializes data to a file upon destruction if changes were made.
@@ -11,7 +13,7 @@ namespace hyper\utils;
  * @package hyper\utils
  * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
  */
-class drawer
+class settings
 {
     /**
      * Stores the multi-dimensional associative array data.
@@ -28,7 +30,7 @@ class drawer
     private bool $isChanged = false;
 
     /**
-     * drawer constructor.
+     * settings constructor.
      *
      * Initializes the data from a serialized file if it exists.
      *
@@ -78,18 +80,6 @@ class drawer
     public function get(string $layer, string $key, $default = null): mixed
     {
         return $key === '*' ? ($this->data[$layer] ?? $default) : ($this->has($layer, $key) ? $this->data[$layer][$key] : $default);
-    }
-
-    /**
-     * Retrieves the entire array for a specific layer or a default value if the layer does not exist.
-     *
-     * @param string $layer The layer name.
-     * @param array $default Default value if the layer is not found.
-     * @return array The array of the specified layer or the default.
-     */
-    public function layer(string $layer, array $default = []): array
-    {
-        return $this->data[$layer] ?? $default;
     }
 
     /**
@@ -148,6 +138,10 @@ class drawer
     public function __destruct()
     {
         if ($this->isChanged) {
+            if (!is_writable($this->filepath) && !chmod($this->filepath, 0777)) {
+                throw new RuntimeException("Settings file:{$this->filepath} is not writable.");
+            }
+
             file_put_contents($this->filepath, serialize($this->data), LOCK_EX);
         }
     }

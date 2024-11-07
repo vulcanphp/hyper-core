@@ -86,7 +86,7 @@ class ping
 
         curl_close($curl);
 
-        // Reset currenct object.
+        // Reset current config.
         $this->resetConfig();
 
         // The response data, including body, status code, final URL, and content length.
@@ -203,6 +203,7 @@ class ping
 
     /**
      * Handles static calls by creating a new instance and calling the dynamic method.
+     * specially for: get, post, put, patch, delete methods.
      *
      * @param string $name The HTTP method name.
      * @param array $arguments The arguments for the method.

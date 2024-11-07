@@ -11,6 +11,7 @@ namespace hyper;
  * 
  * @package hyper
  * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
+ * @version 1.0.1
  */
 class session
 {
@@ -20,7 +21,9 @@ class session
      */
     public function __construct()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     /**
@@ -75,9 +78,9 @@ class session
      *
      * @return void
      */
-    public function regenerate(): void
+    public function regenerate(bool $deleteOldSession = false): void
     {
-        session_regenerate_id(true);
+        session_regenerate_id($deleteOldSession);
     }
 
     /**
@@ -88,5 +91,15 @@ class session
     public function destroy(): void
     {
         session_destroy();
+    }
+
+    /**
+     * Returns the current session ID.
+     *
+     * @return string The current session ID.
+     */
+    public function id(): string
+    {
+        return session_id();
     }
 }

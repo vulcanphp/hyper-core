@@ -5,7 +5,7 @@ namespace hyper;
 /**
  * Class template
  * 
- * Handles template rendering with optional layout and JSON responses for AJAX requests.
+ * Handles template rendering with optional layout
  * 
  * @package hyper
  * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
@@ -29,9 +29,9 @@ class template
     /**
      * Optional layout template to wrap around the main template content
      * 
-     * @var null|string
+     * @var string
      */
-    private ?string $layout = null;
+    private string $layout;
 
     /**
      * Initializes the template path.
@@ -109,21 +109,8 @@ class template
     {
         $content = $this->include($template, $context);
 
-        // Check if request is AJAX-based.
-        if ('fire-view' === application::$app->request->header('content-agent')) {
-            // Set content type for AJAX request.
-            application::$app->response
-                ->setStatusCode(200)
-                ->setHeader('Content-Type', 'application/json; charset=utf-8');
-
-            // Returns JSON response for AJAX request.
-            return json_encode([
-                'title' => strip_tags($this->context['title'] ?? ''),
-                'content' => $content,
-                'blocks' => $this->context,
-            ], JSON_UNESCAPED_UNICODE);
-        } elseif ($this->layout) {
-            // Return a template part with layout.
+        // Return a template part with layout.
+        if (isset($this->layout)) {
             return $this->include($this->layout, ['content' => $content]);
         }
 
@@ -142,7 +129,6 @@ class template
     {
         // Create a template location path with template root dir.
         $templatePath = $this->path . '/templates/' . str_replace('.php', '', $template) . '.php';
-        debugger('template', "Rendering template from: {$templatePath}");
 
         // Extract and pass variables from array.
         $context = array_merge($this->context, $context);

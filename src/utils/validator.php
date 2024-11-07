@@ -132,6 +132,6 @@ class validator
      */
     protected function prettyField(string $field): string
     {
-        return ucwords(str_replace(['-', '_'], ' ', $field));
+        return ucwords(str_replace(['-', '_', '.'], ' ', $field));
     }
 }

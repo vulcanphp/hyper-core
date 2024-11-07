@@ -14,34 +14,19 @@ namespace hyper;
 class response
 {
     /**
-     * @var array An array of callbacks for filtering output content before sending.
-     */
-    private array $outputFilters;
-
-    /**
-     * response constructor.
-     * @param string $content The response body content.
-     * @param int $statusCode The HTTP status code for the response.
-     * @param array $headers Associative array of HTTP headers to send with the response.
+     * Constructor
+     * 
+     * Initializes a new response instance with the provided content, status code, and headers.
+     * 
+     * @param string $content The response content.
+     * @param int $statusCode The HTTP status code.
+     * @param array $headers An associative array of headers to send with the response.
      */
     public function __construct(
         public string $content = '',
         public int $statusCode = 200,
         public array $headers = []
     ) {
-    }
-
-    /**
-     * Adds a filter callback to process the output content before sending the response.
-     * Each filter receives the content as a parameter and returns the modified content.
-     * 
-     * @param callable $callback The filter function to modify content.
-     * @return $this Current response instance for method chaining.
-     */
-    public function addOutputFilter(callable $callback): self
-    {
-        $this->outputFilters[] = $callback;
-        return $this;
     }
 
     /**
@@ -134,13 +119,6 @@ class response
         http_response_code($this->statusCode);
         foreach ($this->headers as $key => $value) {
             header("$key: $value");
-        }
-
-        // apply output filters to modfiry response output before send.
-        if (isset($this->outputFilters)) {
-            foreach ($this->outputFilters as $filter) {
-                $this->content = call_user_func($filter, $this->content);
-            }
         }
 
         // send output to client.

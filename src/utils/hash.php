@@ -14,15 +14,6 @@ namespace hyper\utils;
 class hash
 {
     /**
-     * @var array ENCRYPT_ALGO Supported encryption algorithms and their respective identifiers/cost parameters.
-     */
-    protected const ENCRYPT_ALGO = [
-        'Blowfish' => ['2a', 7],
-        'SHA-256' => [5, 'rounds=5000'],
-        'SHA-512' => [6, 'rounds=5000'],
-    ];
-
-    /**
      * Creates a hashed version of the provided plaintext string using the specified algorithm.
      *
      * @param string $plain The plaintext string to be hashed.
@@ -31,7 +22,8 @@ class hash
      */
     public static function make(string $plain, string $algo = 'Blowfish'): string
     {
-        [$algo, $cost] = self::ENCRYPT_ALGO[$algo];
+        // Set the algorithm and cost parameters
+        [$algo, $cost] = ['Blowfish' => ['2a', 7], 'SHA-256' => [5, 'rounds=5000'], 'SHA-512' => [6, 'rounds=5000']][$algo];
 
         // Adjust cost formatting for Blowfish algorithm
         if ($algo === '2a' && is_int($cost)) {
@@ -46,7 +38,7 @@ class hash
         $salt = strtr(rtrim(base64_encode($salt), '='), '+', '.');
 
         // Hash the plaintext with the selected algorithm, salt, and cost
-        return crypt($plain . env('secret'), sprintf('$%s$%s$%s$', $algo, $cost, $salt));
+        return crypt($plain, sprintf('$%s$%s$%s$', $algo, $cost, $salt));
     }
 
     /**
@@ -58,35 +50,40 @@ class hash
      */
     public static function validate(string $plain, string $hash): bool
     {
-        return hash_equals(crypt($plain . env('secret'), $hash), $hash);
+        return hash_equals(crypt($plain, $hash), $hash);
     }
 
     /**
      * Encrypts a string using AES-256-CBC symmetric encryption.
      *
      * @param string $value The plaintext string to encrypt.
-     * @return string The encrypted string, base64 encoded, containing the ciphertext, IV, and key.
+     * @return string The encrypted string, base64 encoded, containing the cipherText, IV, and key.
      */
     public static function encrypt(string $value): string
     {
-        $key = bin2hex(random_bytes(4));  // Random key for encryption
-        $ivLen = openssl_cipher_iv_length('AES-256-CBC');  // IV length for AES-256-CBC
-        $iv = random_bytes($ivLen);  // Random initialization vector
-        $cipherText = openssl_encrypt($value, 'AES-256-CBC', $key, 0, $iv);  // Encrypt value
-
+        // Random key for encryption
+        $key = bin2hex(random_bytes(4));
+        // IV length for AES-256-CBC
+        $ivLen = openssl_cipher_iv_length('AES-256-CBC');
+        // Random initialization vector
+        $iv = random_bytes($ivLen);
+        // Encrypt value using AES-256-CBC
+        $cipherText = openssl_encrypt($value, 'AES-256-CBC', $key, 0, $iv);
         // Concatenate encrypted data, IV, and key, then encode in base64
-        return base64_encode($cipherText . '::' . $iv . '::' . $key);
+        return base64_encode("$cipherText::$iv::$key");
     }
 
     /**
      * Decrypts a string that was encrypted using the encrypt method.
      *
-     * @param string $ciphertext The base64-encoded encrypted string containing ciphertext, IV, and key.
+     * @param string $cipherText The base64-encoded encrypted string containing cipherText, IV, and key.
      * @return string The decrypted plaintext string.
      */
-    public static function decrypt(string $ciphertext): string
+    public static function decrypt(string $cipherText): string
     {
-        [$encryptedData, $iv, $key] = explode('::', base64_decode($ciphertext));
-        return openssl_decrypt($encryptedData, 'AES-256-CBC', $key, 0, $iv);  // Decrypt and return plaintext
+        // Split cipherText, IV, and key
+        [$encryptedData, $iv, $key] = explode('::', base64_decode($cipherText));
+        // Decrypt using AES-256-CBC and return plaintext
+        return openssl_decrypt($encryptedData, 'AES-256-CBC', $key, 0, $iv);
     }
 }

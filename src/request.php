@@ -191,7 +191,7 @@ class request
         // Prepare all inputs from $_GET, $_POST, and $_FILES.
         $output = array_merge($this->queryParams, $this->postParams, $this->fileUploads);
 
-        // Filter inputs if nedded.
+        // Filter inputs if needed.
         if (!empty($filter)) {
             $output = array_intersect_key($output, array_flip($filter));
             foreach ($filter as $filterKey) {
@@ -227,7 +227,7 @@ class request
      */
     public function header(string $name, $defaultValue = null): ?string
     {
-        $name = 'HTTP_' . $name;
+        $name = "HTTP_$name";
         return $this->server($name, $defaultValue);
     }
 

@@ -12,6 +12,7 @@ use hyper\utils\cache;
 use hyper\utils\collect;
 use hyper\session;
 use hyper\utils\sanitizer;
+use hyper\utils\settings;
 use hyper\utils\validator;
 
 /**
@@ -308,21 +309,6 @@ function env(string $key, $default = null): mixed
 }
 
 /**
- * Logs a message to the debugger.
- *
- * @param string $type The type of the log message. This can be either 'error',
- * 'warning', 'info', or 'debug'.
- * @param mixed $log The log message to send to the debugger. This can be any
- * type of variable, including strings, integers, arrays, objects, etc.
- *
- * @return void
- */
-function debugger(string $type, mixed $log): void
-{
-    application::$app->debugger->log($type, $log);
-}
-
-/**
  * Get the CSRF token.
  *
  * This function returns the CSRF token as a string. The CSRF token is a
@@ -424,19 +410,22 @@ function cache(string $name = 'default'): cache
     return $caches[$name];
 }
 
+
 /**
- * Translate a given string using the current language.
+ * Translates a given text using the application's translator service.
  *
- * This function returns the translated text of the given string. If
- * the translation does not exist, the given string is returned as is.
+ * This function wraps the translator's `translate` method, allowing
+ * for text translation with optional pluralization and argument substitution.
  *
- * @param string $text The string to translate.
- * @param bool $strict Whether to throw an exception if the translation does not exist. Default is false.
- * @return string The translated string, or the given string if it does not exist.
+ * @param string $text The text to be translated.
+ * @param int $num The number used for pluralization, if applicable. Default is 0.
+ * @param array $args Optional arguments for replacing placeholders in the text.
+ * 
+ * @return string The translated text or original text if translation is unavailable.
  */
-function __(?string $text = '', bool $strict = false): ?string
+function __(string $text, int $num = 0, array $args = []): string
 {
-    return application::$app->translator->translate($text, $strict);
+    return application::$app->translator->translate($text, $num, $args);
 }
 
 /**
@@ -499,4 +488,37 @@ function validator(array $rules, array $data): sanitizer
 function _e(string $text): string
 {
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+}
+
+
+/**
+ * Retrieves a setting from the given layer and key.
+ *
+ * @param string $layer The name of the layer containing the setting.
+ * @param string $key The key of the setting to retrieve.
+ * @param mixed $default The default value to return if the setting does not exist.
+ * @return mixed The value of the setting, or the default value.
+ */
+function setting(string $layer, string $key, $default = null)
+{
+    return settings()->get($layer, $key, $default);
+}
+
+/**
+ * Retrieves the global settings instance.
+ *
+ * The settings instance is a utility class for managing application settings.
+ * It loads settings from a data repository and provides methods for retrieving
+ * and modifying settings.
+ *
+ * @return settings The global settings instance.
+ */
+function settings(): settings
+{
+    global $settings;
+    if (!isset($settings)) {
+        $settings = new settings(app_dir('settings.dr'));
+    }
+
+    return $settings;
 }

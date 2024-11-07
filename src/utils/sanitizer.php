@@ -113,33 +113,6 @@ class sanitizer
     }
 
     /**
-     * Sanitizes each element of an array using a provided callback function.
-     *
-     * @param string $key Key in the data array to sanitize.
-     * @param callable $sanitizeFunction Callback function to sanitize each array element.
-     * @return array Sanitized array.
-     */
-    public function array(string $key, callable $sanitizeFunction): array
-    {
-        $value = $this->get($key);
-        return is_array($value) ? array_map($sanitizeFunction, $value) : [];
-    }
-
-    /**
-     * Validates and formats a date string according to the specified format.
-     *
-     * @param string $key Key in the data array to validate.
-     * @param string $format Date format to validate against (default 'Y-m-d').
-     * @return string|null Validated date string or null if invalid.
-     */
-    public function date(string $key, string $format = 'Y-m-d'): ?string
-    {
-        $value = $this->get($key);
-        $date = \DateTime::createFromFormat($format, $value);
-        return $date && $date->format($format) === $value ? $date->format($format) : null;
-    }
-
-    /**
      * Sets a key-value pair in the sanitizer data array.
      *
      * @param string $key Key in the data array.

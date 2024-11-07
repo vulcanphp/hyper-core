@@ -10,14 +10,12 @@ namespace hyper;
  * 
  * @package hyper
  * @author Shahin Moyshan <shahin.moyshan2@gmail.com>
+ * @version 1.0.1
  */
 class application
 {
     /** @var application Singleton instance of the application */
     public static application $app;
-
-    /** @var debugger Debugger instance for logging and debugging purposes */
-    public debugger $debugger;
 
     /** @var request Manages incoming HTTP requests */
     public request $request;
@@ -45,35 +43,25 @@ class application
      * @param array $env Application environment settings.
      * @param array $providers Service providers for additional functionalities.
      * @param array $middlewares Middleware functions to process requests.
-     * @param string|null $routesPath Path to route definitions.
+     * @param string $routesPath Path to route definitions.
      * @param array $requirePath Paths to required files for application setup.
      */
     public function __construct(
         public string $path,
+        private string $routesPath,
         public array $env = [],
         private array $providers = [],
         private array $middlewares = [],
-        private ?string $routesPath = null,
         private array $requirePath = []
     ) {
+        // Set the application instance statically.
         self::$app = $this;
 
-        // Load environment configurations
-        $this->env = array_merge($this->env, require $this->path . '/env.php');
-
-        // Initialize debugger
-        $this->debugger = new debugger($this->env['debug']);
-        $this->debugger->log('app', 'creating application instance');
-
         // Load core components
-        $this->session = new session();
         $this->request = new request();
         $this->response = new response();
         $this->router = new router(new middleware());
         $this->database = new database($this->env['database']);
-        $this->translator = new translator($this->env['lang'], $this->env['lang_dir']);
-
-        $this->debugger->log('app', 'application instance created');
     }
 
     /**
@@ -108,11 +96,8 @@ class application
     {
         // Load required application files
         foreach ($this->requirePath as $require) {
-            $this->debugger->log('app', "requiring file from: {$require}");
             require $require;
         }
-
-        $this->debugger->log('app', 'running service providers, total: ' . count($this->providers));
 
         // Execute all registered service providers
         foreach ($this->providers as $provider) {
@@ -120,11 +105,8 @@ class application
         }
 
         // Load route definitions if a route path is specified
-        if ($this->routesPath !== null) {
-            $this->debugger->log('app', "loading routes from: {$this->routesPath}");
-            foreach (require $this->routesPath as $route) {
-                $this->router->add(...$route);
-            }
+        foreach (require $this->routesPath as $route) {
+            $this->router->add(...$route);
         }
 
         // Register all middleware for routing
@@ -132,15 +114,8 @@ class application
             $this->router->getMiddleware()->add($middleware);
         }
 
-        // Dispatch routing and handle the request
-        $this->debugger->log('app', 'dispatching router');
-        $response = $this->router->dispatch($this->request);
-
-        // Save any updates from the translator (language changes)
-        $this->translator->save();
-
-        // Send the response to the client
-        $response->send();
-        $this->debugger->log('app', 'response sent to client');
+        // Dispatch routing and send the response
+        $this->router->dispatch($this->request, $this->response)
+            ->send();
     }
 }

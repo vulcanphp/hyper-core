@@ -43,15 +43,14 @@ class middleware
      * and the response is immediately returned.
      *
      * @param request $request The request object to pass through the middleware stack.
+     * @param response $response The response object to pass through the middleware stack.
      * @return response|null The first response instance returned by middleware, or null if none returned a response.
      */
-    public function handle(request $request): ?response
+    public function handle(request $request, response $response): ?response
     {
-        debugger('app', 'running middlewares, total (' . count($this->middlewareStack) . ')');
-
         foreach ($this->middlewareStack as $middleware) {
             // Execute the middleware with the request
-            $response = call_user_func($middleware, $request);
+            $response = call_user_func($middleware, $request, $response);
 
             // If a response is returned, stop processing and return it
             if ($response instanceof response) {

@@ -56,13 +56,13 @@ class image
         // Check if all extensions are enabled in this system.
         foreach ($requiredFunctions as $func) {
             if (!function_exists($func)) {
-                throw new RuntimeException('Required function: ' . $func . '() is not found.');
+                throw new RuntimeException("Required function: {$func}() is not found.");
             }
         }
 
         // Check if the source image file exist or not.
         if (!file_exists($this->imageSource)) {
-            throw new RuntimeException('Image file: ' . $this->imageSource . ' does not exist.');
+            throw new RuntimeException("Image file: {$this->imageSource} does not exist.");
         }
 
         // Extract images information, size, dimensions, extension etc...
@@ -98,8 +98,7 @@ class image
             $this->image = match ($this->getInfo('mime')) {
                 'image/jpeg', 'image/jpg' => imagecreatefromjpeg($this->imageSource),
                 'image/png' => imagecreatefrompng($this->imageSource),
-                'image/gif' => imagecreatefromgif($this->imageSource),
-                default => throw new RuntimeException('Unsupported image type for: ' . $this->imageSource),
+                default => throw new RuntimeException("Unsupported image type: {$this->imageSource}"),
             };
         }
         return $this->image;

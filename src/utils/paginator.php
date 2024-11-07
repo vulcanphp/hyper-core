@@ -38,13 +38,11 @@ class paginator
      * @param int $total Total number of items.
      * @param int $limit Number of items per page.
      * @param string $keyword The URL parameter keyword for the page.
-     * @param bool $lazy Determines if data should be sliced lazily or fully retrieved.
      */
     public function __construct(
         public int $total,
         public int $limit = 10,
-        public string $keyword = 'page',
-        public bool $lazy = true
+        public string $keyword = 'page'
     ) {
         $this->resetPaginator();
     }
@@ -151,15 +149,24 @@ class paginator
         return $this;
     }
 
+
     /**
-     * Retrieves the paginated data.
+     * Retrieves the data array or a subset of it, depending on lazy mode.
      * 
-     * @return array
+     * If lazy mode is enabled, the method returns a subset of the original data
+     * array, sliced according to the current offset and limit values.
+     * 
+     * If lazy mode is disabled (default), the method returns the original data
+     * array.
+     * 
+     * @param bool $lazy Enables or disables lazy mode.
+     * 
+     * @return array The data array or a subset of it.
      */
-    public function getData(): array
+    public function getData(bool $lazy = false): array
     {
         // Returns sliced items, if lazy mode is enabled. 
-        if ($this->lazy) {
+        if ($lazy) {
             return array_slice($this->data, $this->offset, $this->limit);
         }
 

@@ -281,13 +281,15 @@ trait orm
             if (!in_array($config['has'], ['many-x', 'one']) || ($config['formIgnore'] ?? false)) {
                 continue;
             }
+
             $model = new $config['model'];
             $field = [
                 'type' => 'select',
                 'required' => true,
-                'label' => ucfirst(str_replace(['_', '-'], ' ', $with)),
+                'label' => ucfirst(str_replace(['_', '-', '.'], ' ', $with)),
                 'options' => collect($model->get()->result())->mapK(fn($d) => [$d->id => (string) $d])->all(),
             ];
+
             if ($config['has'] == 'one') {
                 $fields[] = array_merge($field, [
                     'name' => "{$model->table()}_id",
@@ -309,6 +311,7 @@ trait orm
                 }
             }
         }
+
         return $fields;
     }
 
@@ -324,12 +327,15 @@ trait orm
             if ($config['has'] != 'many-x') {
                 continue;
             }
+
             $old_ids = explode(',', request()->post("_{$config['table']}", ''));
             $new_ids = request()->post($config['table'], []);
             $remove_ids = array_diff($old_ids, $new_ids);
             $create_ids = array_diff($new_ids, $old_ids);
+
             $model = new $config['model'];
             $query = new query(application::$app->database, $config['table']);
+
             if (!empty($create_ids)) {
                 $ids = collect($create_ids)->map(fn($id) => [
                     "{$model->table()}_id" => $id,
@@ -337,6 +343,7 @@ trait orm
                 ])->all();
                 $query->insert(array_values($ids));
             }
+
             if (!empty($remove_ids)) {
                 $query->delete(["{$this->table()}_id" => $this->id, "{$model->table()}_id" => $remove_ids]);
             }

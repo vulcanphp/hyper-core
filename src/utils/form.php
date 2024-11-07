@@ -135,7 +135,7 @@ class form
                 $rules[] = 'required';
             }
 
-            // Add eamil, url, and number rule.
+            // Add email, url, and number rule.
             $rules[] = in_array($field['type'], ['email', 'url', 'number']) ?
                 $field['type'] : (($field['multiple'] || $field['type'] == 'file') ? 'array' : 'text');
 
@@ -243,7 +243,7 @@ class form
             HTML;
         }
 
-        // Holds all input elemets in this arrau.
+        // Holds all input elements in this array.
         $output = [];
 
         // Add input html element for each form element.
