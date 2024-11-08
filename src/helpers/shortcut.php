@@ -319,6 +319,12 @@ function env(string $key, $default = null): mixed
  */
 function csrf_token(): ?string
 {
+    // Generate a new token if it doesn't exist
+    if (!application::$app->session->has('_token')) {
+        application::$app->session->set('_token', bin2hex(random_bytes(32)));
+    }
+
+    // Return the token
     return application::$app->session->get('_token');
 }
 
@@ -418,14 +424,14 @@ function cache(string $name = 'default'): cache
  * for text translation with optional pluralization and argument substitution.
  *
  * @param string $text The text to be translated.
- * @param int $num The number used for pluralization, if applicable. Default is 0.
+ * @param int|string|array $arg The number of arguments to replace placeholders in the translated text.
  * @param array $args Optional arguments for replacing placeholders in the text.
  * 
  * @return string The translated text or original text if translation is unavailable.
  */
-function __(string $text, int $num = 0, array $args = []): string
+function __(string $text, int|string|array $arg = 0, array $args = []): string
 {
-    return application::$app->translator->translate($text, $num, $args);
+    return application::$app->translator->translate($text, $arg, $args);
 }
 
 /**

@@ -16,14 +16,48 @@ namespace hyper;
 class session
 {
     /**
-     * session constructor.
-     * Starts the session if it has not already been started.
+     * The current session status.
+     * 
+     * This property stores the current session status, which can be
+     * one of the following constants:
+     * 
+     * - PHP_SESSION_NONE: No session is associated with the request.
+     * - PHP_SESSION_ACTIVE: A session is associated with the request.
+     * - PHP_SESSION_DISABLED: Sessions are unavailable.
+     * 
+     * @var int
+     * @see https://www.php.net/manual/en/session.constants.php
+     */
+    public int $session_status;
+
+    /**
+     * Constructs a new session object.
+     *
+     * Initializes the session status by getting the current session status.
+     *
+     * @return void
      */
     public function __construct()
     {
-        if (session_status() === PHP_SESSION_NONE) {
+        $this->session_status = session_status();
+    }
+
+    /**
+     * Checks if a session is started.
+     *
+     * If a session is not started, starts the session and returns true.
+     * If a session is already started, returns true without starting a new session.
+     *
+     * @return bool True if the session is started, false otherwise.
+     */
+    public function check(): bool
+    {
+        if ($this->session_status === PHP_SESSION_NONE) {
             session_start();
+            $this->session_status = session_status();
         }
+
+        return $this->session_status;
     }
 
     /**
@@ -35,6 +69,7 @@ class session
      */
     public function get(string $key, $default = null)
     {
+        $this->check();
         return $_SESSION[$key] ?? $default;
     }
 
@@ -47,7 +82,7 @@ class session
      */
     public function set(string $key, $value): void
     {
-        $_SESSION[$key] = $value;
+        $this->check() && $_SESSION[$key] = $value;
     }
 
     /**
@@ -58,7 +93,7 @@ class session
      */
     public function has(string $key): bool
     {
-        return isset($_SESSION[$key]) && !empty($_SESSION[$key]);
+        return $this->check() && isset($_SESSION[$key]) && !empty($_SESSION[$key]);
     }
 
     /**
@@ -69,6 +104,7 @@ class session
      */
     public function delete(string $key): void
     {
+        $this->check();
         unset($_SESSION[$key]);
     }
 
@@ -78,9 +114,9 @@ class session
      *
      * @return void
      */
-    public function regenerate(bool $deleteOldSession = false): void
+    public function regenerate(bool $deleteOldSession = false): bool
     {
-        session_regenerate_id($deleteOldSession);
+        return $this->check() && session_regenerate_id($deleteOldSession);
     }
 
     /**
@@ -88,9 +124,9 @@ class session
      *
      * @return void
      */
-    public function destroy(): void
+    public function destroy(): bool
     {
-        session_destroy();
+        return $this->check() && session_destroy();
     }
 
     /**
@@ -100,6 +136,7 @@ class session
      */
     public function id(): string
     {
+        $this->check();
         return session_id();
     }
 }

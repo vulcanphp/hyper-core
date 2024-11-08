@@ -71,6 +71,18 @@ class template
     }
 
     /**
+     * Retrieves the current template context.
+     *
+     * Returns an associative array of variables available to the template.
+     *
+     * @return array The template context.
+     */
+    public function getContext(): array
+    {
+        return $this->context;
+    }
+
+    /**
      * Removes specified keys from the template context.
      *
      * @param mixed ...$keys The context keys to remove.

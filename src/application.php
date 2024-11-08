@@ -58,6 +58,7 @@ class application
         self::$app = $this;
 
         // Load core components
+        $this->session = new session();
         $this->request = new request();
         $this->response = new response();
         $this->router = new router(new middleware());

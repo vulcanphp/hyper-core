@@ -18,8 +18,17 @@ Core Classes and Functionalities for Hyper MVT Framework
     ```php
     use hyper\database;
     $database = new database([
-        'driver' => 'sqlite', // mysql
-        'file' => __DIR__ . '/../sqlite.db', // required when driver is sqlite
+        // sqlite, mysql, pgsql, cubrid, dblib, firebird, ibm, informix, sqlsrv, oci, odbc
+        'driver' => 'sqlite',
+
+        // required when driver is sqlite
+        'file' => __DIR__ . '/../sqlite.db',
+
+        // pre-define a custom dsn for pdo else, it will auto genere a dsn from this config array.
+        'dsn' => null,
+
+        // define your custom pdo options. Note: PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION added as default.
+        'options' => [],
 
         // when driver is serverside
         'host' => 'localhost',
@@ -28,6 +37,8 @@ Core Classes and Functionalities for Hyper MVT Framework
         'port' => 3306,
         'name' => 'dbname',
         'charset' => 'utf8mb4'
+
+        // Learn more: https://www.php.net/manual/en/book.pdo.php
     ]);
     dump($database->prepare('SELECT * FROM students'));
     ```
@@ -301,6 +312,28 @@ Core Classes and Functionalities for Hyper MVT Framework
         }
     }
     ```
+
+### Settings
+
+You can get setting value from local settings files, where you may store anu non-confidencial data, such as: site title, description etc..
+
+```php
+// get a setting with default value
+dump(setting('general', 'title', 'My Default Title'));
+
+// get settings instance
+dump(settings());
+
+// check if setting value is exists
+dump(settings()->has('general', 'title'));
+
+// Set a setting value
+settings()->set('general', 'title', 'My Site Title');
+
+// Remove a setting value
+settings()->remove('general', 'title');
+
+```
 
 ### Vite
 - **Class:** `vite`

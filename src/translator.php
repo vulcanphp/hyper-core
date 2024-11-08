@@ -28,7 +28,7 @@ class translator
      * @param string $lang The language code.
      * @param string $dir The directory containing the language files.
      */
-    public function __construct(string $lang, string $dir)
+    public function __construct(private string $lang, string $dir)
     {
         $this->translatedTexts = require "{$dir}/{$lang}.php";
     }
@@ -38,23 +38,23 @@ class translator
      * Supports pluralization and argument substitution.
      *
      * @param string $text The text to be translated.
-     * @param int $num The number used to determine pluralization form. Default is 0.
+     * @param int|string|array $arg The number of arguments to replace placeholders in the translated text.
      * @param array $args An array of arguments to replace placeholders in the translated text.
      * @return string The translated text with any placeholders replaced by the provided arguments.
      */
-    public function translate(string $text, int $num = 0, array $args = []): string
+    public function translate(string $text, int|string|array $arg = 0, array $args = []): string
     {
         // Check if the text has a translation
         $translation = $this->translatedTexts[$text] ?? $text;
 
         // Determine if the translation has plural forms
         if (is_array($translation)) {
-            $translation = $num > 1 ? $translation[1] : $translation[0];
+            $translation = $arg > 1 ? $translation[1] : $translation[0];
         }
 
         // Determine if the translation has arguments, else substitute with the number.
-        if ($num != 0 && empty($args)) {
-            $args = [$num];
+        if ($arg !== 0 && empty($args)) {
+            $args = is_array($arg) ? $arg : [$arg];
         }
 
         // Use vsprintf to substitute any placeholders with args
