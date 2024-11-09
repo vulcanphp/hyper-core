@@ -106,10 +106,6 @@ class vite
             return $this->config('running');
         }
 
-        if (!env('debug')) {
-            return false;
-        }
-
         // live check if vite development server is running or not
         $http = new Ping();
         $http->options([CURLOPT_TIMEOUT => 1, CURLOPT_NOBODY => true]);

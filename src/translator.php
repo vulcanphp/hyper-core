@@ -38,11 +38,11 @@ class translator
      * Supports pluralization and argument substitution.
      *
      * @param string $text The text to be translated.
-     * @param int|string|array $arg The number of arguments to replace placeholders in the translated text.
+     * @param $arg The number to determine pluralization or replace placeholder in the translated text.
      * @param array $args An array of arguments to replace placeholders in the translated text.
      * @return string The translated text with any placeholders replaced by the provided arguments.
      */
-    public function translate(string $text, int|string|array $arg = 0, array $args = []): string
+    public function translate(string $text, $arg = null, array $args = []): string
     {
         // Check if the text has a translation
         $translation = $this->translatedTexts[$text] ?? $text;
@@ -53,7 +53,7 @@ class translator
         }
 
         // Determine if the translation has arguments, else substitute with the number.
-        if ($arg !== 0 && empty($args)) {
+        if ($arg !== null && empty($args)) {
             $args = is_array($arg) ? $arg : [$arg];
         }
 

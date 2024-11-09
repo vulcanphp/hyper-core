@@ -424,12 +424,12 @@ function cache(string $name = 'default'): cache
  * for text translation with optional pluralization and argument substitution.
  *
  * @param string $text The text to be translated.
- * @param int|string|array $arg The number of arguments to replace placeholders in the translated text.
+ * @param $arg The number to determine pluralization or replace placeholder in the translated text.
  * @param array $args Optional arguments for replacing placeholders in the text.
  * 
  * @return string The translated text or original text if translation is unavailable.
  */
-function __(string $text, int|string|array $arg = 0, array $args = []): string
+function __(string $text, $arg = null, array $args = []): string
 {
     return application::$app->translator->translate($text, $arg, $args);
 }
