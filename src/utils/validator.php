@@ -44,7 +44,7 @@ class validator
 
                 // Apply validation rule
                 $valid = match ($ruleName) {
-                    'required' => !empty($value) || !in_array($value, [0, true, false], true),
+                    'required' => is_array($value) ? !empty($value) : $value !== '',
                     'email' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_EMAIL) : true,
                     'url' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_URL) : true,
                     'number' => !is_null($value) ? is_numeric($value) : true,
