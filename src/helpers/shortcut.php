@@ -416,6 +416,23 @@ function cache(string $name = 'default'): cache
     return $caches[$name];
 }
 
+/**
+ * Unloads a cache instance.
+ *
+ * This function unloads a cache instance by name. Once unloaded, the cache
+ * will be removed from the global cache list and cannot be accessed again.
+ *
+ * @param string $name The name of the cache instance to unload. Default is 'default'.
+ */
+function unload_cache(string $name = 'default'): void
+{
+    global $caches;
+    if (isset($caches[$name])) {
+        $caches[$name]->unload();
+        unset($caches[$name]);
+    }
+}
+
 
 /**
  * Translates a given text using the application's translator service.

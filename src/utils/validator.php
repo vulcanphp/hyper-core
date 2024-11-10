@@ -44,7 +44,7 @@ class validator
 
                 // Apply validation rule
                 $valid = match ($ruleName) {
-                    'required' => is_array($value) ? !empty($value) : $value !== '',
+                    'required' => is_null($value) ? false : (is_array($value) ? !empty($value) : '' !== $value),
                     'email' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_EMAIL) : true,
                     'url' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_URL) : true,
                     'number' => !is_null($value) ? is_numeric($value) : true,
@@ -104,24 +104,24 @@ class validator
      */
     protected function addError(string $field, string $rule, array $params = []): void
     {
-        $prettyField = $this->prettyField($field);
+        $prettyField = __(strtolower($this->prettyField($field)));
 
         // Error messages for each validation rule
         $messages = [
-            'required' => sprintf("The %s field is required.", $prettyField),
-            'email' => sprintf("The %s field must be a valid email address.", $prettyField),
-            'url' => sprintf("The %s field must be a valid URL.", $prettyField),
-            'number' => sprintf("The %s field must be a number.", $prettyField),
-            'array' => sprintf("The %s field must be an array.", $prettyField),
-            'text' => sprintf("The %s field must be a text.", $prettyField),
-            'min' => sprintf("The %s field must be at least %s characters long.", $prettyField, $params[0] ?? 0),
-            'max' => sprintf("The %s field must not exceed %s characters.", $prettyField, $params[0] ?? 0),
-            'length' => sprintf("The %s field must be %s characters.", $prettyField, $params[0] ?? 0),
-            'equal' => sprintf("The %s field must be equal to %s field.", $prettyField, $this->prettyField($params[0] ?? '')),
+            'required' => __("the %s field is required", $prettyField),
+            'email' => __("the %s field must be a valid email address", $prettyField),
+            'url' => __("the %s field must be a valid URL", $prettyField),
+            'number' => __("the %s field must be a number", $prettyField),
+            'array' => __("the %s field must be an array", $prettyField),
+            'text' => __("the %s field must be a text", $prettyField),
+            'min' => __("the %s field must be at least %s characters long.", [$prettyField, $params[0] ?? 0]),
+            'max' => __("the %s field must not exceed %s characters", [$prettyField, $params[0] ?? 0]),
+            'length' => __("the %s field must be %s characters", [$prettyField, $params[0] ?? 0]),
+            'equal' => __("the %s field must be equal to %s field", [$prettyField, $this->prettyField($params[0] ?? '')]),
         ];
 
         // Store error message
-        $this->errors[$field][] = $messages[$rule] ?? "The $prettyField field has an invalid value.";
+        $this->errors[$field][] = $messages[$rule] ?? __("the %s field has an invalid value", $prettyField);
     }
 
     /**

@@ -61,6 +61,21 @@ class cache
     }
 
     /**
+     * Unloads the cache by resetting all cache-related properties.
+     * 
+     * Calls the destructor to handle any cleanup, and then sets the cache status
+     * indicators to false and clears the in-memory cache data.
+     */
+    public function unload(): void
+    {
+        $this->__destruct();
+        $this->cached = false;
+        $this->changed = false;
+        $this->erased = false;
+        $this->cacheData = [];
+    }
+
+    /**
      * Checks if a cache key exists and optionally erases expired entries.
      *
      * @param string $key The key to check in cache.
