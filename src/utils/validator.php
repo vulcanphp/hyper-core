@@ -114,7 +114,7 @@ class validator
             'number' => __("the %s field must be a number", $prettyField),
             'array' => __("the %s field must be an array", $prettyField),
             'text' => __("the %s field must be a text", $prettyField),
-            'min' => __("the %s field must be at least %s characters long.", [$prettyField, $params[0] ?? 0]),
+            'min' => __("the %s field must be at least %s characters long", [$prettyField, $params[0] ?? 0]),
             'max' => __("the %s field must not exceed %s characters", [$prettyField, $params[0] ?? 0]),
             'length' => __("the %s field must be %s characters", [$prettyField, $params[0] ?? 0]),
             'equal' => __("the %s field must be equal to %s field", [$prettyField, $this->prettyField($params[0] ?? '')]),
