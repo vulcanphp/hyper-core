@@ -50,11 +50,11 @@ class middleware
     {
         foreach ($this->middlewareStack as $middleware) {
             // Execute the middleware with the request
-            $response = call_user_func($middleware, $request, $response);
+            $resp = call_user_func($middleware, $request, $response);
 
             // If a response is returned, stop processing and return it
-            if ($response instanceof response) {
-                return $response;
+            if ($resp instanceof response) {
+                return $resp;
             }
         }
 
