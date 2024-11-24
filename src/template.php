@@ -41,7 +41,7 @@ class template
     public function __construct(?string $path = null)
     {
         $this->setPath(
-            $path ?? application::$app->path
+            $path ?? application::$app->path . '/templates/'
         );
     }
 
@@ -140,7 +140,7 @@ class template
     public function include(string $template, array $context = []): string
     {
         // Create a template location path with template root dir.
-        $templatePath = $this->path . '/templates/' . str_replace('.php', '', $template) . '.php';
+        $templatePath = $this->path . rtrim($template, '.php') . '.php';
 
         // Extract and pass variables from array.
         $context = array_merge($this->context, $context);

@@ -194,7 +194,7 @@ class model
 
         // Call afterSave event
         if (method_exists($this, 'afterSave')) {
-            $status = $this->afterSave();
+            $this->afterSave();
         }
 
         // Check ORM form fields changes 
@@ -227,7 +227,7 @@ class model
     {
         // Call afterRemove event
         if (method_exists($this, 'afterRemove')) {
-            $this->afterRemove($this->toArray());
+            $this->afterRemove();
         }
 
         // Removed uploaded files wich are associated with this model

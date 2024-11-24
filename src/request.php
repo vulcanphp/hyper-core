@@ -65,7 +65,7 @@ class request
      * Additional route parameters.
      * @var array
      */
-    public array $routeParams = [];
+    public array $routeParams;
 
     /**
      * Authenticated user of this request.

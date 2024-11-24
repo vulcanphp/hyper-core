@@ -14,23 +14,41 @@ namespace hyper;
 class translator
 {
     /**
-     * Stores translated texts.
+     * Initializes the translator with the given translations.
      * 
-     * @var array
+     * The provided translations are used to replace placeholders in translated text.
+     * 
+     * @param array $translatedTexts The translations to use.
      */
-    private array $translatedTexts;
+    public function __construct(private array $translatedTexts = [])
+    {
+    }
 
     /**
-     * Constructor
+     * Merges the given translations with the existing ones.
      * 
-     * Initializes the translator with the given language and file directory.
+     * Useful for adding or overriding translations for a specific context.
      * 
-     * @param string $lang The language code.
-     * @param string $dir The directory containing the language files.
+     * @param array $translatedTexts The translations to be merged.
+     * @return void
      */
-    public function __construct(private string $lang, string $dir)
+    public function mergeTranslatedTexts(array $translatedTexts)
     {
-        $this->translatedTexts = require "{$dir}/{$lang}.php";
+        $this->translatedTexts = array_merge($this->translatedTexts, $translatedTexts);
+    }
+
+
+    /**
+     * Sets the translations for the translator.
+     * 
+     * Replaces any existing translations with the provided array of translated texts.
+     * 
+     * @param array $translatedTexts The translations to set.
+     * @return void
+     */
+    public function setTranslatedTexts(array $translatedTexts)
+    {
+        $this->translatedTexts = $translatedTexts;
     }
 
     /**
@@ -56,7 +74,7 @@ class translator
             $args = $arg > 1 ? $args2 : $args;
         }
 
-        // Determine if the translation has arguments, else substitute with the number.
+        // Determine if the translation has arguments, else substitute with the first argument.
         if ($arg !== null && empty($args)) {
             $args = is_array($arg) ? $arg : [$arg];
         }
