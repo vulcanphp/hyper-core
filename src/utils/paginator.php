@@ -221,7 +221,7 @@ class paginator
                 $classes['li'] ?? 'page-item',
                 $classes['a'] ?? 'page-link',
                 $this->getAnchor($this->getPage() - 1),
-                $entity['prev'] ?? __('Previous')
+                $entity['prev'] ?? __('previous')
             );
         }
 
@@ -274,7 +274,7 @@ class paginator
                 $classes['li'] ?? 'page-item',
                 $classes['a'] ?? 'page-link',
                 $this->getAnchor($this->getPage() + 1),
-                $entity['next'] ?? __('Next')
+                $entity['next'] ?? __('next')
             );
         }
 

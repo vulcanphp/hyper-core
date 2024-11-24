@@ -8,9 +8,9 @@ use PDO;
 use RuntimeException;
 
 /**
- * Trait orm
+ * ORM for hyper\model
  * 
- * Provides functionality for handling object-relational mapping (ORM) in a PHP application.
+ * Provides functionality for handling object-relational mapping (ORM) in a hyper model.
  * It includes methods for managing relationships between models, such as one-to-one, one-to-many,
  * and many-to-many, with support for lazy loading and eager loading of related data.
  * 
@@ -137,22 +137,22 @@ trait orm
     private function __manyX(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
+        $ids = collect($data)
+            ->pluck('id')
+            ->unique();
 
-        $query = $this->applyCallback(
+        $objects = $ids->count() > 0 ? $this->applyCallback(
             $object->query()
                 ->fetch(PDO::FETCH_ASSOC)
                 ->select("p.*, t1.{$data[0]->table()}_id, t1.{$object->table()}_id")
                 ->join($config['table'], "t1.{$object->table()}_id = p.id")
                 ->where([
-                    "t1.{$data[0]->table()}_id" => collect($data)
-                        ->pluck('id')
-                        ->unique()
-                        ->all()
+                    "t1.{$data[0]->table()}_id" => $ids->all()
                 ]),
             $config
-        );
+        )->result() : [];
 
-        return $this->__parseOrmData($data, $query->result(), $object, $with);
+        return $this->__parseOrmData($data, $objects, $object, $with);
     }
 
     /**
@@ -166,26 +166,22 @@ trait orm
     private function __many(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
+        $ids = collect($data)
+            ->pluck('id')
+            ->unique();
 
-        $query = $this->applyCallback(
+        $objects = $ids->count() > 0 ? $this->applyCallback(
             $object->query()
                 ->select()
                 ->fetch(PDO::FETCH_ASSOC)
                 ->where([
-                    "{$data[0]->table()}_id" => collect($data)
-                        ->pluck('id')
-                        ->unique()
-                        ->all()
+                    "{$data[0]->table()}_id" => $ids->all()
                 ]),
             $config
-        );
+        )
+            ->result() : [];
 
-        return $this->__parseOrmData(
-            $data,
-            $query->result(),
-            $object,
-            $with
-        );
+        return $this->__parseOrmData($data, $objects, $object, $with);
     }
 
     /**
@@ -223,20 +219,20 @@ trait orm
     private function __one(array $data, array $config, string $with): array
     {
         $object = new $config['model'];
+        $ids = collect($data)
+            ->pluck("{$object->table()}_id")
+            ->unique();
 
-        $objects = $this->applyCallback(
+        $objects = $ids->count() > 0 ? $this->applyCallback(
             $object->query()
                 ->select()
                 ->fetch(PDO::FETCH_ASSOC)
                 ->where([
-                    'id' => collect($data)
-                        ->pluck("{$object->table()}_id")
-                        ->unique()
-                        ->all()
+                    'id' => $ids->all()
                 ]),
             $config
         )
-            ->result();
+            ->result() : [];
 
         foreach ($data as $d) {
             if (!isset($d->orm[$with])) {
@@ -249,6 +245,7 @@ trait orm
                 }
             }
         }
+
         return $data;
     }
 
@@ -270,61 +267,16 @@ trait orm
     }
 
     /**
-     * Extracts form fields for ORM-related data based on the configuration.
-     * 
-     * @return array An array of form fields for managing ORM relationships.
-     */
-    protected function extractOrmFields(): array
-    {
-        $fields = [];
-        foreach ($this->orm() as $with => $config) {
-            if (!in_array($config['has'], ['many-x', 'one']) || ($config['formIgnore'] ?? false)) {
-                continue;
-            }
-
-            $model = new $config['model'];
-            $field = [
-                'type' => 'select',
-                'required' => true,
-                'label' => ucfirst(str_replace(['_', '-', '.'], ' ', $with)),
-                'options' => collect($model->get()->result())->mapK(fn($d) => [$d->id => (string) $d])->all(),
-            ];
-
-            if ($config['has'] == 'one') {
-                $fields[] = array_merge($field, [
-                    'name' => "{$model->table()}_id",
-                    'value' => $this->{"{$model->table()}_id"} ?? null,
-                ]);
-            } elseif ($config['has'] == 'many-x') {
-                $values = isset($this->id) ? collect($this->{$with})->pluck('id')->all() : [];
-                $fields[] = array_merge($field, [
-                    'name' => $config['table'],
-                    'multiple' => true,
-                    'value' => $values,
-                ]);
-                if (!empty($values)) {
-                    $fields[] = [
-                        'type' => 'hidden',
-                        'name' => "_{$config['table']}",
-                        'value' => implode(',', $values)
-                    ];
-                }
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
      * Validates and handles form submissions for many-x relationships, 
      * synchronizing the intermediate table records.
      * 
-     * @return void
+     * @return bool True if validation and synchronization were successful, false otherwise.
      */
-    protected function checkOrmFormFields(): void
+    protected function checkOrmFormFields(): bool
     {
+        $status = false;
         foreach ($this->orm() as $config) {
-            if ($config['has'] != 'many-x') {
+            if ($config['has'] !== 'many-x' || request()->post($config['table'], false) === false) {
                 continue;
             }
 
@@ -342,11 +294,15 @@ trait orm
                     "{$this->table()}_id" => $this->id,
                 ])->all();
                 $query->insert(array_values($ids));
+                $status = true;
             }
 
             if (!empty($remove_ids)) {
                 $query->delete(["{$this->table()}_id" => $this->id, "{$model->table()}_id" => $remove_ids]);
+                $status = true;
             }
         }
+
+        return $status;
     }
 }

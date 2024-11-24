@@ -323,7 +323,7 @@ class collect
     public function pluck(string $key): self
     {
         $results = array_map(
-            fn($item) => is_array($item) ? $item[$key] ?? null : (is_object($item) ? $item->$key ?? null : null),
+            fn($item) => is_array($item) ? ($item[$key] ?? null) : (is_object($item) ? $item->$key ?? null : null),
             $this->items
         );
         return new self(array_filter($results));
@@ -351,7 +351,7 @@ class collect
      */
     public function where(string $key, $value): self
     {
-        return new self(array_filter($this->items, fn($item) => is_array($item) && ($item[$key] ?? null) === $value));
+        return new self(array_filter($this->items, fn($item) => is_array($item) ? (($item[$key] ?? null) === $value) : (is_object($item) ? ($item->$key ?? null) === $value : false)));
     }
 
     /**
@@ -484,9 +484,9 @@ class collect
      *
      * @return string
      */
-    public function toJson(): string
+    public function toJson(...$args): string
     {
-        return json_encode($this->items);
+        return json_encode($this->items, ...$args);
     }
 
     /**

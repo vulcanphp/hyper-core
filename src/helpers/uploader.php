@@ -41,8 +41,9 @@ trait uploader
             $name = $upload['name'];
             $upload['uploadDir'] = env('upload_dir') . '/' . ($upload['uploadTo'] ?? '');
             unset($upload['name'], $upload['uploadTo']);
-
-            $data[$name] = $this->__doUpload($name, $upload, $data[$name]);
+            if (is_array($data[$name]) && isset($data[$name]['size'])) {
+                $data[$name] = $this->__doUpload($name, $upload, $data[$name]);
+            }
         }
         return $data;
     }
@@ -58,7 +59,7 @@ trait uploader
     protected function __doUpload(string $name, array $upload, ?array $files): null|string|array
     {
         $saved = null;
-        $oldFiles = explode(',', application::$app->request->post('_' . $name, ''));
+        $oldFiles = explode(',', application::$app->request->post("_$name", ''));
         if (isset($files) && (((array) $files['size'] ?? [])[0] ?? 0) > 0) {
             $uploader = new utilsUploader(...$upload);
             $saved = $this->clearSavedPath($uploader->upload($files), env('upload_dir'));

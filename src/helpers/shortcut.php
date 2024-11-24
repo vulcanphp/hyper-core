@@ -12,7 +12,6 @@ use hyper\utils\cache;
 use hyper\utils\collect;
 use hyper\session;
 use hyper\utils\sanitizer;
-use hyper\utils\settings;
 use hyper\utils\validator;
 
 /**
@@ -353,7 +352,7 @@ function csrf(): string
  */
 function is_quest(): bool
 {
-    return !isset(application::$app->request->user);
+    return !isset(application::$app->request->user) || empty(application::$app->request->user);
 }
 
 /**
@@ -433,7 +432,6 @@ function unload_cache(string $name = 'default'): void
     }
 }
 
-
 /**
  * Translates a given text using the application's translator service.
  *
@@ -443,12 +441,13 @@ function unload_cache(string $name = 'default'): void
  * @param string $text The text to be translated.
  * @param $arg The number to determine pluralization or replace placeholder in the translated text.
  * @param array $args Optional arguments for replacing placeholders in the text.
+ * @param array $args2 Optional arguments for replacing plural placeholders in the translated text.
  * 
  * @return string The translated text or original text if translation is unavailable.
  */
-function __(string $text, $arg = null, array $args = []): string
+function __(string $text, $arg = null, array $args = [], array $args2 = []): string
 {
-    return application::$app->translator->translate($text, $arg, $args);
+    return application::$app->translator->translate($text, $arg, $args, $args2);
 }
 
 /**
@@ -511,37 +510,4 @@ function validator(array $rules, array $data): sanitizer
 function _e(string $text): string
 {
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-}
-
-
-/**
- * Retrieves a setting from the given layer and key.
- *
- * @param string $layer The name of the layer containing the setting.
- * @param string $key The key of the setting to retrieve.
- * @param mixed $default The default value to return if the setting does not exist.
- * @return mixed The value of the setting, or the default value.
- */
-function setting(string $layer, string $key, $default = null)
-{
-    return settings()->get($layer, $key, $default);
-}
-
-/**
- * Retrieves the global settings instance.
- *
- * The settings instance is a utility class for managing application settings.
- * It loads settings from a data repository and provides methods for retrieving
- * and modifying settings.
- *
- * @return settings The global settings instance.
- */
-function settings(): settings
-{
-    global $settings;
-    if (!isset($settings)) {
-        $settings = new settings(app_dir('settings.dr'));
-    }
-
-    return $settings;
 }

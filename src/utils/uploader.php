@@ -21,7 +21,7 @@ class uploader
      * @param string $uploadDir Directory where files will be uploaded.
      * @param array $extensions Allowed file extensions (e.g., ['jpg', 'png']).
      * @param bool $multiple Whether multiple file uploads are allowed.
-     * @param int $maxSize Maximum allowed file size in bytes. Default is 2MB (2097152 bytes).
+     * @param int|null $maxSize Optional maximum allowed file size in bytes. Default is 2MB (2097152 bytes).
      * @param array|null $resize Optional dimensions to resize the image, e.g., ['width' => 100, 'height' => 100].
      * @param array|null $resizes Optional multiple resize dimensions, e.g., [['width' => 100, 'height' => 100], ...].
      * @param int|null $compress Optional image compression level (1-100).
@@ -32,16 +32,16 @@ class uploader
         public string $uploadDir,
         public array $extensions = [],
         public bool $multiple = false,
-        public int $maxSize = 2097152,
+        public ?int $maxSize = 2097152,
         public ?array $resize = null,
         public ?array $resizes = null,
         public ?int $compress = null,
     ) {
         // Ensure the upload directory exists and is writable
         if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0777, true)) {
-            throw new RuntimeException("Failed to create upload directory.");
+            throw new RuntimeException(__('failed to create upload directory'));
         } elseif (!is_writable($this->uploadDir) && !chmod($this->uploadDir, 0777)) {
-            throw new RuntimeException("Upload directory is not writable.");
+            throw new RuntimeException(__('upload directory is not writable'));
         }
     }
 
@@ -83,14 +83,14 @@ class uploader
     protected function processUpload(array $file): array|string
     {
         // Validate file size
-        if ($file['size'] > $this->maxSize) {
-            throw new RuntimeException("File size exceeds the maximum limit.");
+        if (isset($this->maxSize) && $file['size'] > $this->maxSize) {
+            throw new RuntimeException(__('file size exceeds the maximum limit'));
         }
 
         // Validate file extension
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         if (!empty($this->extensions) && !in_array(strtolower($extension), $this->extensions)) {
-            throw new RuntimeException("Invalid file extension.");
+            throw new RuntimeException(__('invalid file extension'));
         }
 
         // Create a unique file name
@@ -99,7 +99,7 @@ class uploader
 
         // Move the uploaded file to the destination
         if (!move_uploaded_file($file['tmp_name'], $destination)) {
-            throw new RuntimeException("Failed to move uploaded file.");
+            throw new RuntimeException(__('failed to move uploaded file'));
         }
 
         // Compress, resize, and bulk resize image if options are set and the file is an image
@@ -135,7 +135,23 @@ class uploader
     {
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $baseName = pathinfo($fileName, PATHINFO_FILENAME);
-        $uniqueName = uniqid(preg_replace('/[^a-zA-z0-9]+/', '-', $baseName) . '_') . '.' . $extension;
-        return $uniqueName;
+
+        // Normalize and transliterate the filename (optional, if you want readable names)
+        if (function_exists('transliterator_transliterate')) {
+            $baseName = transliterator_transliterate('Any-Latin; Latin-ASCII', $baseName);
+        }
+
+        // Replace non-alphanumeric characters with a hyphen
+        $baseName = preg_replace('/[^a-zA-Z0-9]+/u', '-', $baseName);
+
+        // Limit the length of the base name (50 characters) while keeping multibyte safety
+        $baseName = mb_substr($baseName, 0, 50, 'UTF-8');
+
+        // Ensure the file name is unique
+        return sprintf(
+            '%s.%s',
+            uniqid("{$baseName}_"),
+            $extension
+        );
     }
 }

@@ -40,9 +40,10 @@ class translator
      * @param string $text The text to be translated.
      * @param $arg The number to determine pluralization or replace placeholder in the translated text.
      * @param array $args An array of arguments to replace placeholders in the translated text.
+     * @param array $args2 An array of arguments to replace plural placeholders in the translated text.
      * @return string The translated text with any placeholders replaced by the provided arguments.
      */
-    public function translate(string $text, $arg = null, array $args = []): string
+    public function translate(string $text, $arg = null, array $args = [], array $args2 = []): string
     {
         // Check if the text has a translation
         $translation = $this->translatedTexts[$text] ?? $text;
@@ -50,6 +51,9 @@ class translator
         // Determine if the translation has plural forms
         if (is_array($translation)) {
             $translation = $arg > 1 ? $translation[1] : $translation[0];
+            $args = $arg > 1 && !empty($args2) ? $args2 : $args;
+        } elseif (!empty($args) && !empty($args2)) {
+            $args = $arg > 1 ? $args2 : $args;
         }
 
         // Determine if the translation has arguments, else substitute with the number.

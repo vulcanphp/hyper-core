@@ -65,13 +65,13 @@ class request
      * Additional route parameters.
      * @var array
      */
-    public array $params = [];
+    public array $routeParams = [];
 
     /**
      * Authenticated user of this request.
-     * @var object|array
+     * @var false|null|object|array
      */
-    public object|array $user;
+    public false|null|object|array $user;
 
     /**
      * request constructor.
@@ -239,7 +239,7 @@ class request
      */
     public function accept(string $contentType): bool
     {
-        return strpos($this->header('accept', ''), $contentType) !== false;
+        return stripos($this->header('accept', ''), $contentType) !== false;
     }
 
     /**
@@ -251,28 +251,74 @@ class request
     {
         $ip = '';
 
-        // Catch client ip address from server parameters.
+        // Catch client ip address from headers or server parameters.
         if (!empty($this->header('client-ip'))) {
             $ip = $this->header('client-ip');
         } elseif (!empty($this->header('x-forwarded-for'))) {
-            $ips = explode(',', $this->header('x-forwarded-for'));
-            $ip = trim(end($ips));
+            $ip = $this->header('x-forwarded-for');
         } elseif (!empty($this->header('x-forwarded'))) {
-            $ips = explode(',', $this->header('x-forwarded'));
-            $ip = trim(end($ips));
+            $ip = $this->header('x-forwarded');
         } elseif (!empty($this->header('forwarded'))) {
-            $ips = explode(',', $this->header('forwarded'));
-            $ip = trim(end($ips));
+            $ip = $this->header('forwarded');
         } elseif (!empty($this->header('forwarded-for'))) {
-            $ips = explode(',', $this->header('forwarded-for'));
-            $ip = trim(end($ips));
+            $ip = $this->header('forwarded-for');
         } elseif (!empty($this->header('cf-connecting-ip'))) {
             $ip = $this->header('cf-connecting-ip');
         } elseif (!empty($this->server('remote-addr'))) {
             $ip = $this->server('remote-addr');
         }
 
+        // Get the last ip address from comma separated list.
+        if (!empty($ip)) {
+            $ips = explode(',', $ip);
+            $ip = trim(end($ips));
+        }
+
         // Return a valid ip address of client, else return as false.
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : false;
+    }
+
+    /**
+     * Merge the server parameters with additional key-value pairs.
+     * 
+     * @param array $params Associative array of server parameters to extend.
+     * @return void
+     */
+    public function mergeServerParams(array $params): void
+    {
+        $this->serverParams = array_merge($this->serverParams, $params);
+    }
+
+    /**
+     * Merge the query parameters with additional key-value pairs.
+     * 
+     * @param array $params Associative array of query parameters to extend.
+     * @return void
+     */
+    public function mergeQueryParams(array $params): void
+    {
+        $this->queryParams = array_merge($this->queryParams, $params);
+    }
+
+    /**
+     * Merge the POST parameters with additional key-value pairs.
+     * 
+     * @param array $params Associative array of parameters to add.
+     * @return void
+     */
+    public function mergePostParams(array $params): void
+    {
+        $this->postParams = array_merge($this->postParams, $params);
+    }
+
+    /**
+     * Merge the file uploads with additional key-value pairs.
+     * 
+     * @param array $uploads Associative array of file uploads to add.
+     * @return void
+     */
+    public function mergeFileUploads(array $uploads)
+    {
+        $this->fileUploads = array_merge($this->fileUploads, $uploads);
     }
 }

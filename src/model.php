@@ -115,11 +115,7 @@ class model
         );
 
         // Update this records if it has an id, else insert this records into database.
-        if (isset($this->id)) {
-            $status = $this->query()->update($data, ['id' => $this->id]);
-        } else {
-            $status = $this->query()->insert($data);
-        }
+        $status = isset($this->id) ? $this->query()->update($data, ['id' => $this->id]) : $this->query()->insert($data);
 
         // Save model id if it is newly created.
         if (is_int($status)) {
@@ -127,9 +123,11 @@ class model
         }
 
         // Apply model events after saved the record.
-        if ($status) {
-            $this->decodeSavedData();
-            $this->afterSavedData();
+        $this->decodeSavedData();
+        $event_status = $this->afterSavedData();
+
+        if (!$status && $event_status) {
+            $status = true;
         }
 
         // Return database operation status.
@@ -143,6 +141,9 @@ class model
      */
     public function remove(): bool
     {
+        // Call events when this model is about to be deleted.
+        $this->beforeRemoveData();
+
         // Remove this record from database.
         $removed = $this->query()->delete(['id' => $this->id]);
 
@@ -163,6 +164,11 @@ class model
      */
     private function beforeSaveData(array $data): array
     {
+        // Call beforeSave event
+        if (method_exists($this, 'beforeSave')) {
+            $data = $this->beforeSave($data);
+        }
+
         // Check uploaded files, if model has files enabled.
         if (method_exists($this, 'uploadChanges')) {
             $data = $this->uploadChanges($data);
@@ -180,12 +186,35 @@ class model
     /**
      * Callback after saving data to handle post-save tasks.
      * 
+     * @return bool
+     */
+    private function afterSavedData(): bool
+    {
+        $status = false;
+
+        // Call afterSave event
+        if (method_exists($this, 'afterSave')) {
+            $status = $this->afterSave();
+        }
+
+        // Check ORM form fields changes 
+        if (method_exists($this, 'checkOrmFormFields')) {
+            $status = $this->checkOrmFormFields();
+        }
+
+        return $status;
+    }
+
+    /**
+     * Called before removing the model from the database.
+     * 
      * @return void
      */
-    private function afterSavedData(): void
+    private function beforeRemoveData(): void
     {
-        if (method_exists($this, 'checkOrmFormFields')) {
-            $this->checkOrmFormFields();
+        // Call beforeRemove event
+        if (method_exists($this, 'beforeRemove')) {
+            $this->beforeRemove();
         }
     }
 
@@ -196,6 +225,11 @@ class model
      */
     private function afterRemovedData(): void
     {
+        // Call afterRemove event
+        if (method_exists($this, 'afterRemove')) {
+            $this->afterRemove($this->toArray());
+        }
+
         // Removed uploaded files wich are associated with this model
         if (method_exists($this, 'removeUploaded')) {
             $this->removeUploaded($this->toArray());
@@ -277,6 +311,6 @@ class model
      */
     public function __toString()
     {
-        return sprintf('model: (%s), %s(%d)', static::class, $this->table, $this->id);
+        return sprintf('model: (%s), %s(%d)', static::class, $this->table, $this->id ?? '#');
     }
 }

@@ -111,7 +111,7 @@ class router
             }
         }
 
-        return $route;
+        return rtrim($route, '*');
     }
 
     /**
@@ -191,7 +191,7 @@ class router
             }
 
             // Set router parameters into reqouest class and return as route matched.
-            $request->params = $matches;
+            $request->routeParams = $matches;
             return true;
         }
 
@@ -229,8 +229,8 @@ class router
                 $arguments[$name] = ['request' => $request, 'response' => $response][$name];
             } else {
                 // Set arguments value from matched route parameters else set default value
-                $arguments[$name] = $request->params[$name] ??
-                    ($request->params[$key] ?? ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null));
+                $arguments[$name] = $request->routeParams[$name] ??
+                    ($request->routeParams[$key] ?? ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null));
             }
         }
 

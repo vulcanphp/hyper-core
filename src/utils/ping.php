@@ -17,16 +17,18 @@ use RuntimeException;
 class ping
 {
     /**
-     * Configuration settings for the cURL request, including headers, options, download file location, and user agent.
-     * 
-     * @var array $config
+     * Constructor for the ping class.
+     *
+     * Initializes an instance of the ping class with optional configuration settings.
+     * The settings are merged with the default configuration and can be used to customize the cURL options,
+     * user agent, and download behavior.
+     *
+     * @param array $config Optional configuration settings. See the resetConfig method for available options.
      */
-    protected array $config = [
-        'headers' => [],
-        'options' => [],
-        'download' => null,
-        'useragent' => null,
-    ];
+    public function __construct(protected array $config = [])
+    {
+        $this->resetConfig($config);
+    }
 
     /**
      * Sends an HTTP request to the specified URL with optional parameters.
@@ -94,16 +96,21 @@ class ping
     }
 
     /**
-     * Resets the configuration to its default state.
+     * Resets the current configuration.
+     *
+     * Resets the current configuration back to default, optionally overriding
+     * certain configuration settings.
+     *
+     * @param array $config An associative array of configuration settings.
      */
-    public function resetConfig(): void
+    public function resetConfig(array $config = []): void
     {
-        $this->config = [
+        $this->config = array_merge([
             'headers' => [],
             'options' => [],
             'download' => null,
             'useragent' => null,
-        ];
+        ], $config);
     }
 
     /**

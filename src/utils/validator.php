@@ -14,9 +14,13 @@ namespace hyper\utils;
 class validator
 {
     /**
-     * @var array Holds any validation errors that occur.
+     * Constructs a new validator instance.
+     * 
+     * @param array $errors Optional array of errors to start with.
      */
-    protected array $errors = [];
+    public function __construct(protected array $errors = [])
+    {
+    }
 
     /**
      * Validates input data against specified rules.
@@ -33,6 +37,10 @@ class validator
             $value = $inputData[$field] ?? null;
             $valid = true;
 
+            // Check if field is required
+            $is_required = in_array('required', $fieldRules, true);
+
+            // Loop through field rules
             foreach ($fieldRules as $rule) {
                 // Parse rule name and parameters
                 $ruleName = $rule;
@@ -42,18 +50,21 @@ class validator
                     $ruleParams = explode(',', $ruleParams);
                 }
 
+                // Check if value is valid
+                $has_valid_value = $value === null ? false : (is_array($value) ? !empty($value) : '' !== $value);
+
                 // Apply validation rule
                 $valid = match ($ruleName) {
-                    'required' => is_null($value) ? false : (is_array($value) ? !empty($value) : '' !== $value),
-                    'email' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_EMAIL) : true,
-                    'url' => !is_null($value) ? filter_var($value, FILTER_VALIDATE_URL) : true,
-                    'number' => !is_null($value) ? is_numeric($value) : true,
-                    'array' => !is_null($value) ? is_array($value) : true,
-                    'text' => !is_null($value) ? is_string($value) : true,
-                    'min' => !is_null($value) ? strlen($value) >= (int) $ruleParams[0] : true,
-                    'max' => !is_null($value) ? strlen($value) <= (int) $ruleParams[0] : true,
-                    'length' => !is_null($value) ? strlen($value) == (int) $ruleParams[0] : true,
-                    'equal' => !is_null($value) ? $value == ($inputData[$ruleParams[0]] ?? '') : true,
+                    'required' => $has_valid_value,
+                    'email' => ($has_valid_value || $is_required) ? filter_var($value, FILTER_VALIDATE_EMAIL) : true,
+                    'url' => ($has_valid_value || $is_required) ? filter_var($value, FILTER_VALIDATE_URL) : true,
+                    'number' => ($has_valid_value || $is_required) ? is_numeric($value) : true,
+                    'array' => ($has_valid_value || $is_required) ? is_array($value) : true,
+                    'text' => ($has_valid_value || $is_required) ? is_string($value) : true,
+                    'min' => ($has_valid_value || $is_required) ? strlen($value) >= (int) $ruleParams[0] : true,
+                    'max' => ($has_valid_value || $is_required) ? strlen($value) <= (int) $ruleParams[0] : true,
+                    'length' => ($has_valid_value || $is_required) ? strlen($value) == (int) $ruleParams[0] : true,
+                    'equal' => ($has_valid_value || $is_required) ? $value == $inputData[$ruleParams[0]] : true,
                     default => true
                 };
 
@@ -104,7 +115,7 @@ class validator
      */
     protected function addError(string $field, string $rule, array $params = []): void
     {
-        $prettyField = __(strtolower($this->prettyField($field)));
+        $prettyField = __($this->parseFieldName($field));
 
         // Error messages for each validation rule
         $messages = [
@@ -117,7 +128,7 @@ class validator
             'min' => __("the %s field must be at least %s characters long", [$prettyField, $params[0] ?? 0]),
             'max' => __("the %s field must not exceed %s characters", [$prettyField, $params[0] ?? 0]),
             'length' => __("the %s field must be %s characters", [$prettyField, $params[0] ?? 0]),
-            'equal' => __("the %s field must be equal to %s field", [$prettyField, $this->prettyField($params[0] ?? '')]),
+            'equal' => __("the %s field must be equal to %s field", [$prettyField, __($this->parseFieldName($params[0] ?? ''))]),
         ];
 
         // Store error message
@@ -130,8 +141,8 @@ class validator
      * @param string $field Field name to convert.
      * @return string Pretty field name.
      */
-    protected function prettyField(string $field): string
+    protected function parseFieldName(string $field): string
     {
-        return ucwords(str_replace(['-', '_', '.'], ' ', $field));
+        return strtolower(str_replace(['-', '_', '.'], ' ', $field));
     }
 }

@@ -548,11 +548,6 @@ class query
         )
             ->executeSelectQuery();
 
-        // Set database records into paginator class.
-        $paginator->setData(
-            $this->applyMapper($this->query['sql']->fetchAll(...($this->query['fetch'] ?? [PDO::FETCH_OBJ])))
-        );
-
         // Get total record count, from sqlite database and update it to paginator class.
         if ($this->database->config['driver'] === 'sqlite') {
             $paginator->total = $this->count();
@@ -564,6 +559,11 @@ class query
             // Update number of iterms into paginator class.
             $paginator->total = $total->fetch(PDO::FETCH_COLUMN);
         }
+
+        // Set database records into paginator class.
+        $paginator->setData(
+            $this->applyMapper($this->query['sql']->fetchAll(...($this->query['fetch'] ?? [PDO::FETCH_OBJ])))
+        );
 
         // Re-initialize paginator pages.
         $paginator->resetPaginator();

@@ -94,8 +94,13 @@ class tracer
      */
     private function renderError(string $type, string $message, string $file, int $line, array $trace = []): void
     {
+        // Clear any previous output
+        if (ob_get_length()) {
+            ob_clean();
+        }
+
+        // Set HTTP response code to 500 for server error.
         if (!headers_sent()) {
-            // Set HTTP response code to 500 for server error.
             http_response_code(500);
         }
 
@@ -120,6 +125,9 @@ class tracer
             </body>
             </html>
         HTML;
+
+        // End the script to prevent further execution
+        exit;
     }
 
     /**
